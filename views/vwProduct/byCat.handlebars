@@ -1,0 +1,135 @@
+{{#section 'css'}}
+<style>
+    /* CSS Loading spinner */
+    .loader {
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+        display: none; 
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+</style>
+{{/section}}
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        Danh sách sản phẩm
+    </div>
+    <div class="card-body">
+        
+        <!-- Loading -->
+        <div id="loading" class="loader"></div>
+
+        <!-- 1. Container -->
+        <div id="product-container" class="row g-3">
+            <!-- JavaScript -->
+        </div>
+
+        <!-- 2. Container-->
+        <nav class="mt-4">
+            <ul id="pagination-container" class="pagination justify-content-center">
+                <!-- JavaScript -->
+            </ul>
+        </nav>
+    </div>
+</div>
+
+{{#section 'js'}}
+<script>
+    const categoryId = "{{catId}}"; 
+
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+    }
+
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('vi-VN') + ' ' + date.toLocaleTimeString('vi-VN');
+    }
+
+    function loadProducts(page) {
+        $('#loading').show();
+        $('#product-container').empty(); 
+        
+        $.getJSON(`/products/api/byCat?id=${categoryId}&page=${page}`, function(data) {
+            $('#loading').hide();
+
+            if (data.products.length === 0) {
+                $('#product-container').html('<p class="text-center">Không có sản phẩm nào.</p>');
+                return;
+            }
+
+            const html = data.products.map(p => `
+                <div class="col-sm-6 col-md-4 col-lg-4">
+                    <div class="card h-100 shadow-sm border-0">
+                        
+                        <div class="position-relative overflow-hidden">
+                            
+                            <a href="/products/detail/${p.id}">
+                                <img src="${p.imagePath}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="${p.name}">
+                            </a>
+                            
+                            <button class="btn btn-light shadow-sm position-absolute bottom-0 end-0 m-2 rounded-circle btn-watchlist"
+                                    style="width: 35px; height: 35px; padding: 0; display: flex; align-items: center; justify-content: center; z-index: 10;"
+                                    data-id="${p.id}" 
+                                    title="Thêm vào yêu thích">
+                                <i class="bi bi-heart text-danger" style="font-size: 16px;"></i>
+                            </button>
+                        </div>
+
+                        <div class="card-body d-flex flex-column">
+                            <h6 class="card-title fw-bold text-truncate">
+                                <a href="/products/detail/${p.id}" class="text-decoration-none text-dark">${p.name}</a>
+                            </h6>
+                            <div class="mt-auto">
+                                <h5 class="text-primary fw-bold">${formatCurrency(p.current_price)}</h5>
+                                <small class="text-muted">Start: ${formatCurrency(p.start_price)}</small>
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer bg-white border-top-0">
+                            <a href="/products/detail/${p.id}" class="btn btn-outline-primary w-100 btn-sm">Chi tiết</a>
+                        </div>
+                    </div>
+                </div>
+
+            `).join('');
+
+            $('#product-container').html(html);
+
+            renderPagination(data.currentPage, data.totalPages);
+        });
+    }
+
+    function renderPagination(current, total) {
+        let html = '';
+
+        if (current > 1) {
+            html += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="loadProducts(${current - 1})">Previous</a></li>`;
+        } else {
+            html += `<li class="page-item disabled"><span class="page-link">Previous</span></li>`;
+        }
+
+        for (let i = 1; i <= total; i++) {
+            const activeClass = i === current ? 'active' : '';
+            html += `<li class="page-item ${activeClass}"><a class="page-link" href="javascript:void(0)" onclick="loadProducts(${i})">${i}</a></li>`;
+        }
+
+        if (current < total) {
+            html += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="loadProducts(${current + 1})">Next</a></li>`;
+        } else {
+            html += `<li class="page-item disabled"><span class="page-link">Next</span></li>`;
+        }
+
+        $('#pagination-container').html(html);
+    }
+
+    $(document).ready(function() {
+        loadProducts(1);
+    });
+</script>
+{{/section}}
