@@ -14,12 +14,6 @@ npm run dev
 ```
 *Lưu ý: Server chạy tại `http://localhost:3000`*
 
-### Chuẩn bị dữ liệu ảnh (Static)
-Chạy script để tải và sắp xếp ảnh vào thư mục `static/imgs/sp`:
-```bash
-node organize-images.js
-```
-
 ### Cấu hình hệ thống
 Dự án không dùng `.env` mà cấu hình trực tiếp trong thư mục `utils`. Hãy chỉnh sửa các file sau:
 
