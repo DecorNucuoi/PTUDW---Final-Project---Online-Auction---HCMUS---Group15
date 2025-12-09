@@ -1,0 +1,21 @@
+<div class="card">
+  <h5 class="card-header">OTP Verification</h5>
+  <div class="card-body">
+    {{#if err_message}}
+        <div class="alert alert-danger">{{err_message}}</div>
+    {{/if}}
+    
+    <p>We have sent a code to <b>{{email}}</b></p>
+    
+    <form method="post" action="/account/otp">
+      <input type="hidden" name="email" value="{{email}}">
+      
+      <div class="form-group mb-3">
+        <label>Enter OTP Code</label>
+        <input type="text" name="otp" class="form-control" placeholder="6 digits code">
+      </div>
+      
+      <button type="submit" class="btn btn-primary">Verify</button>
+    </form>
+  </div>
+</div>

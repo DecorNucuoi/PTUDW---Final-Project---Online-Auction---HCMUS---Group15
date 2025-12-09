@@ -1,0 +1,63 @@
+<div class="container mt-4 mb-5">
+  <div class="row">
+    <div class="col-md-3">
+      {{> account-sidebar}}
+    </div>
+
+    <div class="col-md-9">
+      <div class="card shadow-sm">
+        <h5 class="card-header bg-white text-primary">
+          <i class="bi bi-hammer"></i> Đang tham gia đấu giá
+        </h5>
+        <div class="card-body">
+          {{#if empty}}
+             <div class="text-center py-4">
+               <i class="bi bi-search fs-1 text-muted"></i>
+               <p class="text-muted mt-2">Bạn chưa tham gia đấu giá sản phẩm nào.</p>
+               <a href="/" class="btn btn-outline-primary btn-sm">Tìm sản phẩm ngay</a>
+             </div>
+          {{else}}
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 50%">Sản phẩm</th>
+                        <th>Giá hiện tại</th>
+                        <th>Trạng thái</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                {{#each products}}
+                  <tr>
+                    <td>
+                        <a href="/products/detail/{{id}}" class="fw-bold text-decoration-none text-dark">
+                            {{name}}
+                        </a>
+                        <br>
+                        <small class="text-muted"><i class="bi bi-clock"></i> Kết thúc: {{format_remainingTime end_time}}</small>
+                    </td>
+                    <td class="text-danger fw-bold">{{format_currency current_price}}</td>
+                    <td>
+                        {{#if (isEqual ../authUser.id winner_id)}}
+                            <span class="badge bg-success">Đang dẫn đầu</span>
+                        {{else}}
+                            <span class="badge bg-warning text-dark">Bị vượt mặt</span>
+                        {{/if}}
+                    </td>
+                    <td class="text-end">
+                        <a href="/products/detail/{{id}}" class="btn btn-sm btn-outline-primary">
+                            Chi tiết
+                        </a>
+                    </td>
+                  </tr>
+                {{/each}}
+                </tbody>
+              </table>
+            </div>
+          {{/if}}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

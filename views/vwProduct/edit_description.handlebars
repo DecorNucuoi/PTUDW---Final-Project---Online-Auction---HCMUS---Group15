@@ -1,0 +1,41 @@
+{{#section 'css'}}
+<script src="https://cdn.tiny.cloud/1/ajci3viw6u1cl2bd8mpphlgzvft1t3c0nvf0cbbfu4f932k1/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+  tinymce.init({
+    selector: '#newDescription',
+    height: 400,
+    plugins: 'lists link image table',
+    toolbar: 'undo redo | bold italic | bullist numlist | table'
+  });
+</script>
+{{/section}}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-warning bg-opacity-25">
+            <h5 class="mb-0"><i class="bi bi-pencil-square"></i> Bổ sung mô tả cho: <strong>{{product.name}}</strong></h5>
+        </div>
+        <div class="card-body">
+            
+            <div class="alert alert-info small">
+                <i class="bi bi-info-circle-fill"></i> Lưu ý: Nội dung bạn viết dưới đây sẽ được <strong>nối thêm</strong> vào mô tả hiện có (kèm ngày giờ), không thay thế nội dung cũ.
+            </div>
+
+            <form method="post">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Nội dung bổ sung:</label>
+                    <textarea id="newDescription" name="description"></textarea>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="/account/posted" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Quay lại
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-save"></i> Lưu thông tin
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,287 @@
+{{#section 'css'}}
+<style>
+    .gallery-thumb { cursor: pointer; opacity: 0.6; transition: 0.3s; }
+    .gallery-thumb:hover, .gallery-thumb.active { opacity: 1; border: 2px solid #0d6efd; }
+    .big-img { height: 400px; object-fit: contain; background: #f8f9fa; }
+</style>
+{{/section}}
+
+<div class="card mt-4 shadow-sm">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-5">
+                <div class="text-center mb-3">
+                    <img src="{{images.[0].src}}" id="mainImage" class="img-fluid rounded big-img" alt="{{product.name}}">
+                </div>
+                <div class="d-flex justify-content-center gap-2">
+                    {{#each images}}
+                    <img src="{{src}}" 
+                         class="gallery-thumb rounded {{#if active}}active{{/if}}" 
+                         width="70" height="70" 
+                         onclick="changeImage(this, '{{src}}')">
+                    {{/each}}
+                </div>
+            </div>
+
+            <div class="col-md-7">
+                <h3 class="fw-bold">{{product.name}}</h3>
+                <div class="text-muted mb-3">
+                    Ngày đăng: {{product.created_at}}
+                </div>
+
+                <div class="card bg-light border-0 mb-4">
+                    <div class="card-body position-relative">
+                        
+                        <div>
+                            <h2 class="text-danger fw-bold mb-0">{{format_currency product.current_price}}</h2>
+                            <small class="text-muted">Giá khởi điểm: {{format_currency product.start_price}}</small>
+                            
+                            {{#if product.buy_now_price}}
+                            <div class="mt-1">
+                                <span class="badge bg-success">Mua ngay: {{format_currency product.buy_now_price}}</span>
+                            </div>
+                            {{/if}}
+                        </div>
+
+                        <button class="btn btn-outline-danger btn-watchlist position-absolute top-50 end-0 translate-middle-y me-3" 
+                                data-id="{{product.id}}">
+                            <i class="bi bi-heart"></i> Yêu thích
+                        </button>
+
+                    </div>
+                </div>
+
+
+                <div class="row mb-4">
+                    <div class="col-6">
+                        <strong><i class="bi bi-shop"></i> Người bán:</strong>
+                        <p class="mb-0">{{product.seller_masked}}</p>
+                        <small class="text-muted">Điểm đánh giá: {{product.seller_point}}</small>
+                    </div>
+                    <div class="col-6">
+                        <strong><i class="bi bi-trophy"></i> Bidder cao nhất:</strong>
+                        <p class="mb-0">{{product.winner_masked}}</p>
+                        <small class="text-muted">Điểm đánh giá: {{product.winner_point}}</small>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning d-flex align-items-center" role="alert">
+                    <i class="bi bi-clock-history fs-4 me-2"></i>
+                    <div>
+                        Thời gian còn lại:<br>
+                        <strong>{{format_remainingTime product.end_time}}</strong>
+                        <br>
+                        <small class="text-muted">(Kết thúc: {{product.end_time}})</small>
+                    </div>
+                </div>
+
+                {{#if isAuthenticated}}
+                {{#if err_message}}
+                    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> 
+                        <strong>Không thể ra giá:</strong> {{err_message}}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {{/if}}
+
+                {{#if success_message}}
+                    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                        <i class="bi bi-check-circle-fill me-2"></i> 
+                        {{success_message}}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {{/if}}
+
+                <form method="post" action="/products/bid" class="d-flex gap-2 mt-3" id="frmBid">
+                    <input type="hidden" name="id" value="{{product.id}}">
+                    
+                    <div class="input-group">
+                        <span class="input-group-text">₫</span>
+                        <input type="number" class="form-control fw-bold text-danger" name="price" 
+                            value="{{nextBidPrice}}" 
+                            min="{{nextBidPrice}}"
+                            step="{{product.step_price}}"
+                            id="bidPriceInput"
+                            required>
+                        <button type="button" class="btn btn-primary px-4" onclick="confirmBid()">
+                            <i class="bi bi-hammer"></i> Ra giá
+                        </button>
+                    </div>
+                    <div class="form-text">
+                        * Giá đề nghị tối thiểu: {{format_currency nextBidPrice}}
+                    </div>
+                </form>
+            {{else}}
+                <div class="d-grid mt-3">
+                    <a href="/account/signin?retUrl=/products/detail/{{product.id}}" class="btn btn-outline-primary">
+                        Đăng nhập để đấu giá
+                    </a>
+                </div>
+            {{/if}}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4 shadow-sm">
+    <div class="card-header fw-bold bg-white">
+        <i class="bi bi-file-text"></i> Mô tả chi tiết
+    </div>
+    <div class="card-body">
+        {{{product.description}}}
+    </div>
+</div>
+
+<div class="card mt-4 shadow-sm">
+    <div class="card-header fw-bold bg-white">
+        <i class="bi bi-clock-history"></i> Lịch sử đấu giá
+    </div>
+    <div class="card-body">
+        {{#if bidHistory}}
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">Thời điểm</th>
+                            <th scope="col">Người mua</th>
+                            <th scope="col">Giá</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each bidHistory}}
+                        <tr>
+                            <td>{{time_str}}</td>
+                            
+                            <td>
+                                <i class="bi bi-person-fill text-muted"></i> 
+                                {{bidder_masked}}
+                            </td>
+                            
+                            <td class="fw-bold text-success">
+                                {{format_currency price}}
+                            </td>
+
+                            {{#if (isEqual ../product.seller_id ../authUser.id)}}
+                                <td class="text-end">
+                                    <form method="post" action="/products/kick" class="d-inline">
+                                        <input type="hidden" name="proId" value="{{../product.id}}">
+                                        <input type="hidden" name="bidderId" value="{{bidder_id}}">
+                                        
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                onclick="return confirm('Bạn có chắc muốn từ chối và cấm người này đấu giá không?');"
+                                                title="Từ chối lượt đấu giá này">
+                                            <i class="bi bi-slash-circle"></i> Từ chối
+                                        </button>
+                                    </form>
+                                </td>
+                            {{/if}}
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        {{else}}
+            <p class="text-muted text-center mb-0">Chưa có lượt ra giá nào.</p>
+        {{/if}}
+    </div>
+</div>
+
+<div class="card mt-4 shadow-sm">
+    <div class="card-header fw-bold bg-white">
+        <i class="bi bi-question-circle"></i> Hỏi đáp
+    </div>
+    <div class="card-body">
+        {{#if isAuthenticated}}
+        <form class="mb-4" method="post" action="/products/question">
+            <input type="hidden" name="proId" value="{{product.id}}">
+            <div class="input-group">
+                <input type="text" class="form-control" name="question" placeholder="Đặt câu hỏi cho người bán..." required>
+                <button class="btn btn-outline-secondary" type="submit">
+                    <i class="bi bi-send"></i> Gửi câu hỏi
+                </button>
+            </div>
+        </form>
+        {{else}}
+            <div class="alert alert-warning">
+                Vui lòng <a href="/account/signin">đăng nhập</a> để đặt câu hỏi.
+            </div>
+        {{/if}}
+
+        <div class="list-group list-group-flush">
+            {{#each questions}}
+            <div class="list-group-item">
+                <div class="fw-bold">{{asker_name}}: <span class="fw-normal text-dark">{{question}}</span></div>
+                <div class="text-muted small mb-1">{{created_at}}</div>
+                
+                {{#if answer}}
+                <div class="ms-4 p-2 bg-light rounded border-start border-4 border-success">
+                    <strong>Shop trả lời:</strong> {{answer}}
+                </div>
+            {{else}}
+                {{#if (isEqual ../product.seller_id ../authUser.id)}}
+                    <form method="post" action="/products/answer" class="mt-2 ms-4">
+                        <input type="hidden" name="proId" value="{{../product.id}}">
+                        <input type="hidden" name="questionId" value="{{id}}">
+                        
+                        <div class="input-group input-group-sm">
+                            <input type="text" class="form-control" name="answer" placeholder="Nhập câu trả lời..." required>
+                            <button class="btn btn-success" type="submit">Trả lời</button>
+                        </div>
+                    </form>
+                {{/if}}
+
+                {{/if}}
+            </div>
+            {{/each}}
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4 mb-5 shadow-sm">
+    <div class="card-header fw-bold bg-white">
+        <i class="bi bi-grid"></i> Sản phẩm tương tự
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {{#each relatedProducts}}
+            <div class="col-md-2 col-6 mb-3">
+                <div class="card h-100 border-0 shadow-sm">
+                    <a href="/products/detail/{{id}}">
+                        <img src="/static/imgs/sp/{{id}}/main_thumbs.jpg" class="card-img-top rounded" 
+                             style="height: 120px; object-fit: cover;">
+                    </a>
+                    <div class="card-body p-2">
+                        <h6 class="card-title text-truncate" style="font-size: 14px;">
+                            <a href="/products/detail/{{id}}" class="text-decoration-none text-dark">{{name}}</a>
+                        </h6>
+                        <div class="text-danger fw-bold small">{{format_currency current_price}}</div>
+                    </div>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+</div>
+
+{{#section 'js'}}
+<script>
+    function changeImage(element, src) {
+        document.getElementById('mainImage').src = src;
+        
+        document.querySelectorAll('.gallery-thumb').forEach(el => el.classList.remove('active'));
+        
+        element.classList.add('active');
+    }
+
+    function confirmBid() {
+        const price = $('#bidPriceInput').val();
+        const formattedPrice = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+        
+        const isConfirmed = confirm(`Bạn có chắc muốn ra giá ${formattedPrice} cho sản phẩm này không?`);
+        
+        if (isConfirmed) {
+            $('#frmBid').submit();
+        }
+    }
+</script>
+{{/section}}

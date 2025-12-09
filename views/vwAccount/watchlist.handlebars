@@ -1,0 +1,36 @@
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-md-3">
+            {{> account-sidebar}}
+        </div>
+        <div class="col-md-9">
+            <div class="card shadow-sm">
+                <h5 class="card-header bg-white text-danger">
+                    <i class="bi bi-heart-fill"></i> Danh sách yêu thích
+                </h5>
+                <div class="card-body">
+                    {{#if empty}}
+                        <p class="text-muted">Danh sách trống.</p>
+                    {{else}}
+                        <div class="row g-3">
+                            {{#each products}}
+                            <div class="col-md-4">
+                                <div class="card h-100">
+                                    <img src="/static/imgs/sp/{{id}}/main_thumbs.jpg" class="card-img-top" style="height:150px; object-fit:cover">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-truncate">{{name}}</h6>
+                                        <div class="text-danger fw-bold">{{format_currency current_price}}</div>
+                                    </div>
+                                    <div class="card-footer bg-white">
+                                        <button class="btn btn-sm btn-outline-danger w-100 btn-watchlist" data-id="{{id}}">Bỏ thích</button>
+                                    </div>
+                                </div>
+                            </div>
+                            {{/each}}
+                        </div>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

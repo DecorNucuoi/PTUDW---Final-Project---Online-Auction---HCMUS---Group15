@@ -1,0 +1,69 @@
+<div class="container mt-4 mb-5">
+  <div class="row">
+    <div class="col-md-3">
+      {{> account-sidebar}}
+    </div>
+
+    <div class="col-md-9">
+      <div class="card shadow-sm">
+        <h5 class="card-header bg-white">
+          <i class="bi bi-star-half"></i> Hồ sơ tín nhiệm
+        </h5>
+        <div class="card-body">
+            
+            <div class="row text-center mb-4 py-3 bg-light rounded mx-1">
+                <div class="col-4 border-end">
+                    <h2 class="fw-bold mb-0">{{stats.ratio}}%</h2>
+                    <small class="text-muted">Tỷ lệ tích cực</small>
+                </div>
+                <div class="col-4 border-end">
+                    <h2 class="fw-bold text-success mb-0">+{{stats.likes}}</h2>
+                    <small class="text-muted">Lượt Like</small>
+                </div>
+                <div class="col-4">
+                    <h2 class="fw-bold text-danger mb-0">-{{stats.dislikes}}</h2>
+                    <small class="text-muted">Lượt Dislike</small>
+                </div>
+            </div>
+
+            <hr>
+            
+            <h6 class="fw-bold mb-3"><i class="bi bi-chat-left-text"></i> Chi tiết đánh giá từ cộng đồng:</h6>
+            
+            {{#if empty}}
+                <div class="text-center py-4 text-muted fst-italic">
+                    Chưa có ai đánh giá bạn. Hãy tích cực tham gia mua bán!
+                </div>
+            {{else}}
+                <div class="list-group list-group-flush">
+                    {{#each reviews}}
+                    <div class="list-group-item px-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{rater_name}}</strong>
+                                <span class="text-muted small mx-2">•</span>
+                                <small class="text-muted">{{created_at}}</small>
+                            </div>
+                            <div>
+                                {{#if (isEqual score 1)}}
+                                    <span class="badge bg-success"><i class="bi bi-hand-thumbs-up-fill"></i> Tích cực (+1)</span>
+                                {{else}}
+                                    <span class="badge bg-danger"><i class="bi bi-hand-thumbs-down-fill"></i> Tiêu cực (-1)</span>
+                                {{/if}}
+                            </div>
+                        </div>
+                        <div class="mt-2 p-2 bg-light rounded small">
+                            <i class="bi bi-quote text-muted"></i> {{comment}}
+                        </div>
+                        <div class="text-end mt-1">
+                            <small class="text-muted fst-italic">Sản phẩm #{{product_id}}</small>
+                        </div>
+                    </div>
+                    {{/each}}
+                </div>
+            {{/if}}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,29 @@
+<div class="card">
+  <h5 class="card-header">Reset Password</h5>
+  <div class="card-body">
+    <form method="post" id="frmReset">
+      <div class="mb-3">
+        <label class="form-label">New Password</label>
+        <input type="password" class="form-control" id="password" name="password" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Confirm Password</label>
+        <input type="password" class="form-control" id="confirm" required>
+      </div>
+      <button type="submit" class="btn btn-success">Reset Password</button>
+    </form>
+  </div>
+</div>
+
+{{#section 'js'}}
+<script>
+  $('#frmReset').on('submit', function(e) {
+    e.preventDefault();
+    if ($('#password').val() !== $('#confirm').val()) {
+      alert('Passwords do not match!');
+    } else {
+      this.submit();
+    }
+  });
+</script>
+{{/section}}

@@ -1,0 +1,79 @@
+<div class="container mt-4 mb-5">
+  <div class="row">
+    <div class="col-md-3">
+      {{> account-sidebar}}
+    </div>
+
+    <div class="col-md-9">
+      <div class="card shadow-sm">
+        <h5 class="card-header bg-white">
+          <i class="bi bi-person-lines-fill"></i> Thông tin cá nhân
+        </h5>
+        <div class="card-body">
+          
+          {{#if err_message}}
+            <div class="alert alert-danger alert-dismissible fade show">
+              {{err_message}}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {{/if}}
+
+          {{#if success_message}}
+            <div class="alert alert-success alert-dismissible fade show">
+              {{success_message}}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {{/if}}
+
+          <form method="post">
+            <div class="row mb-3">
+                <label class="col-sm-3 col-form-label">Email</label>
+                <div class="col-sm-9">
+                    <input type="email" class="form-control" name="email" value="{{user.email}}" required>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label class="col-sm-3 col-form-label">Họ tên</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" name="full_name" value="{{user.full_name}}" required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-9 offset-sm-3">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Cập nhật</button>
+                </div>
+            </div>
+          </form>
+
+          <hr class="my-4">
+          <h5 class="fw-bold"><i class="bi bi-shop"></i> Quyền bán hàng</h5>
+          
+          {{#if (isEqual user.role 1)}}
+              <div class="alert alert-success mt-3">
+                  <i class="bi bi-check-circle-fill"></i> Bạn đã là <strong>Seller</strong>.
+              </div>
+          {{else}}
+              {{#if isPending}}
+                  <div class="alert alert-warning mt-3">
+                      <i class="bi bi-hourglass-split"></i> Yêu cầu nâng cấp đang <strong>chờ duyệt</strong>.
+                  </div>
+              {{else}}
+                  <div class="alert alert-light border mt-3 d-flex justify-content-between align-items-center">
+                      <div>
+                          <strong>Bạn muốn đăng bán sản phẩm?</strong>
+                          <p class="mb-0 small text-muted">Xin nâng cấp để được bán hàng trong 7 ngày.</p>
+                      </div>
+                      
+                      <form method="post" action="/account/request-upgrade">
+                          <button type="submit" class="btn btn-outline-primary">
+                              <i class="bi bi-arrow-up-circle"></i> Xin nâng cấp
+                          </button>
+                      </form>
+                  </div>
+              {{/if}}
+          {{/if}}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

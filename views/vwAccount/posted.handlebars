@@ -1,0 +1,156 @@
+<div class="container mt-4 mb-5">
+  <div class="row">
+    <div class="col-md-3">
+      {{> account-sidebar}}
+    </div>
+
+    <div class="col-md-9">
+      <div class="card shadow-sm">
+        <h5 class="card-header bg-white d-flex justify-content-between align-items-center">
+          <span class="text-primary"><i class="bi bi-shop-window"></i> Sản phẩm đang bán</span>
+          
+          <a href="/products/upload" class="btn btn-sm btn-primary">
+              <i class="bi bi-plus-lg"></i> Đăng mới
+          </a>
+        </h5>
+        
+        <div class="card-body">
+          {{#if empty}}
+            <div class="text-center py-4 text-muted">
+                <i class="bi bi-box-seam fs-1"></i>
+                <p>Bạn chưa đăng sản phẩm nào.</p>
+            </div>
+          {{else}}
+            <div class="table-responsive">
+              <table class="table align-middle table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 40%">Sản phẩm</th>
+                        <th>Giá hiện tại</th>
+                        <th>Trạng thái</th>
+                        <th>Người thắng/Giữ giá</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {{#each products}}
+                  <tr>
+                    <td>
+                         <div class="d-flex align-items-center">
+                             <a href="/products/detail/{{id}}">
+                                <img src="/static/imgs/sp/{{id}}/main_thumbs.jpg" class="rounded me-2 border" style="width: 50px; height: 50px; object-fit: cover;">
+                             </a>
+                             <div class="text-truncate" style="max-width: 200px;">
+                                 <a href="/products/detail/{{id}}" class="text-decoration-none fw-bold text-dark">{{name}}</a>
+                                 <br>
+                                 <small class="text-muted">{{created_at}}</small>
+                             </div>
+                         </div>
+                    </td>
+                    
+                    <td class="text-danger fw-bold">
+                        {{format_currency current_price}}
+                    </td>
+
+                    <td>
+                        {{#if (isEqual status 1)}}
+                            <span class="badge bg-success">Đang đấu</span>
+                        {{else}}
+                            <span class="badge bg-secondary">Đã kết thúc</span>
+                        {{/if}}
+                    </td>
+
+                    <td>
+                        {{#if winner_name}}
+                            <span class="fw-bold text-primary">{{winner_name}}</span>
+                        {{else}}
+                            <span class="text-muted fst-italic">Chưa có</span>
+                        {{/if}}
+                    </td>
+
+                    <td>
+                        <a href="/products/edit/{{id}}" class="btn btn-sm btn-warning mb-1" title="Bổ sung mô tả">
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+
+                        {{#if (isEqual status 2)}}
+                            {{#if winner_id}}
+                                <div class="mt-1 d-flex gap-1">
+                                    <button class="btn btn-sm btn-success" 
+                                            title="Đánh giá người thắng"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#rateWinnerModal"
+                                            data-pid="{{id}}"
+                                            data-wid="{{winner_id}}"
+                                            data-wname="{{winner_name}}">
+                                        <i class="bi bi-hand-thumbs-up"></i>
+                                    </button>
+
+                                    <form method="post" action="/account/cancel-transaction" class="d-inline">
+                                        <input type="hidden" name="product_id" value="{{id}}">
+                                        <input type="hidden" name="winner_id" value="{{winner_id}}">
+                                        <button type="submit" class="btn btn-sm btn-danger" 
+                                                title="Hủy giao dịch (Khách không trả tiền)"
+                                                onclick="return confirm('Hủy giao dịch sẽ tự động đánh giá -1 cho người này. Bạn chắc chắn chứ?')">
+                                            <i class="bi bi-x-circle"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            {{/if}}
+                        {{/if}}
+                    </td>
+                  </tr>
+                {{/each}}
+                </tbody>
+              </table>
+            </div>
+          {{/if}}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="rateWinnerModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="/account/rate-winner">
+          <div class="modal-header">
+            <h5 class="modal-title">Đánh giá người thắng</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <p>Người thắng: <strong id="modalWinnerName" class="text-primary"></strong></p>
+            <input type="hidden" name="product_id" id="modalProductId">
+            <input type="hidden" name="winner_id" id="modalWinnerId">
+
+            <div class="mb-3 text-center">
+                <div class="btn-group w-75" role="group">
+                    <input type="radio" class="btn-check" name="score" id="w_like" value="1" checked>
+                    <label class="btn btn-outline-success" for="w_like"><i class="bi bi-hand-thumbs-up-fill"></i> Like (+1)</label>
+
+                    <input type="radio" class="btn-check" name="score" id="w_dislike" value="-1">
+                    <label class="btn btn-outline-danger" for="w_dislike"><i class="bi bi-hand-thumbs-down-fill"></i> Dislike (-1)</label>
+                </div>
+            </div>
+            <div class="mb-3">
+                <textarea class="form-control" name="comment" rows="3" placeholder="Nhận xét về người mua..." required></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Gửi đánh giá</button>
+          </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{{#section 'js'}}
+<script>
+    const rateWinnerModal = document.getElementById('rateWinnerModal');
+    rateWinnerModal.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget;
+        document.getElementById('modalProductId').value = button.getAttribute('data-pid');
+        document.getElementById('modalWinnerId').value = button.getAttribute('data-wid');
+        document.getElementById('modalWinnerName').textContent = button.getAttribute('data-wname');
+    });
+</script>
+{{/section}}

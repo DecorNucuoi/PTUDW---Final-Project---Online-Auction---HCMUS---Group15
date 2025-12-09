@@ -1,0 +1,20 @@
+<div class="card">
+  <h5 class="card-header">Verify New Email</h5>
+  <div class="card-body">
+    {{#if err_message}}
+        <div class="alert alert-danger">{{err_message}}</div>
+    {{/if}}
+    
+    <p>We have sent a verification code to your new email: <b>{{email}}</b></p>
+    
+    <form method="post" action="/account/verify-email-change">
+      <div class="form-group mb-3">
+        <label>Enter OTP Code</label>
+        <input type="text" name="otp" class="form-control" placeholder="6 digits code" required>
+      </div>
+      
+      <button type="submit" class="btn btn-primary">Verify & Update</button>
+      <a href="/account/profile" class="btn btn-secondary">Cancel</a>
+    </form>
+  </div>
+</div>

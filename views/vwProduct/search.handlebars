@@ -1,0 +1,215 @@
+{{#section 'css'}}
+<style>
+    .badge-new {
+        animation: blink 2s infinite;
+    }
+    @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    
+    .card-new {
+        border: 2px solid #ffc107 !important; /* Màu vàng */
+    }
+
+    .product-img {
+        height: 220px;
+        object-fit: cover;
+        width: 100%;
+    }
+</style>
+{{/section}}
+
+<div class="container-fluid mt-4 mb-5">
+    
+    <div class="card shadow-sm mb-4">
+        <div class="card-body d-flex flex-wrap justify-content-between align-items-center py-2">
+            
+            <div class="mb-2 mb-md-0">
+                <h5 class="mb-0 text-secondary">
+                    Kết quả tìm kiếm: <span class="text-primary fw-bold">"{{keyword}}"</span>
+                </h5>
+            </div>
+
+            <div class="d-flex align-items-center">
+                <label for="sortSelect" class="me-2 text-nowrap fw-bold"><i class="bi bi-sort-down"></i> Sắp xếp:</label>
+                <select class="form-select form-select-sm" id="sortSelect" onchange="searchProducts(1)" style="width: 250px;">
+                    <option value="time_desc">⏳ Thời gian kết thúc giảm dần</option>
+                    <option value="price_asc">💰 Giá tăng dần</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div id="loading" class="text-center my-5" style="display:none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <div id="search-container" class="row g-3">
+    </div>
+
+    <nav class="mt-5">
+        <ul id="pagination-container" class="pagination justify-content-center"></ul>
+    </nav>
+</div>
+
+{{#section 'js'}}
+<script>
+    const currentKeyword = "{{keyword}}";
+    
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+    }
+    
+    function maskName(name) {
+        if (!name) return 'Chưa có';
+        const len = name.length;
+        return '***' + name.substring(Math.floor(len / 2));
+    }
+
+    function isNewProduct(dateString) {
+        const created = new Date(dateString);
+        const now = new Date();
+        const diffMinutes = (now - created) / (1000 * 60);
+        return diffMinutes <= 60; // 60 phút
+    }
+
+    function formatTimeLeft(endDate) {
+        const end = new Date(endDate);
+        const now = new Date();
+        const diff = end - now;
+        if (diff <= 0) return 'Đã kết thúc';
+        
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        
+        if (days > 0) return `${days} ngày nữa`;
+        if (hours > 0) return `${hours} giờ nữa`;
+        return `${minutes} phút nữa`;
+    }
+
+    function searchProducts(page) {
+        const sort = $('#sortSelect').val();
+        
+        $('#loading').show();
+        $('#search-container').empty();
+        $('#pagination-container').empty(); 
+
+        $.getJSON(`/products/api/search?q=${currentKeyword}&page=${page}&sort=${sort}`, function(data) {
+            $('#loading').hide();
+            
+            if (data.products.length === 0) {
+                $('#search-container').html(`
+                    <div class="col-12 text-center py-5">
+                        <i class="bi bi-emoji-frown display-1 text-muted"></i>
+                        <p class="mt-3 fs-4 text-muted">Không tìm thấy sản phẩm nào phù hợp.</p>
+                    </div>
+                `);
+                return;
+            }
+
+            const html = data.products.map(p => {
+                const isNew = isNewProduct(p.created_at);
+                const borderClass = isNew ? 'card-new' : '';
+                const newBadge = isNew ? '<span class="position-absolute top-0 start-0 badge bg-warning text-dark m-2 badge-new shadow">NEW</span>' : '';
+
+                const buyNowHtml = p.buy_now_price ? 
+                    `<span class="badge bg-danger mb-1"><i class="bi bi-lightning-fill"></i> Mua ngay: ${formatCurrency(p.buy_now_price)}</span>` : '';
+
+                return `
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="card h-100 shadow-sm ${borderClass} position-relative">
+                        <!-- Ảnh -->
+                        <div class="position-relative overflow-hidden">
+                            <a href="/products/detail/${p.id}">
+                                <img src="/static/imgs/sp/${p.id}/main_thumbs.jpg" class="card-img-top product-img" alt="${p.name}">
+                            </a>
+                                <button class="btn btn-light shadow-sm position-absolute bottom-0 end-0 m-2 rounded-circle btn-watchlist" 
+                                    style="width: 35px; height: 35px; padding: 0; display: flex; align-items: center; justify-content: center; z-index: 10;"
+                                    data-id="${id}" 
+                                    title="Thêm vào yêu thích">
+                                <i class="bi bi-heart text-danger" style="font-size: 16px;"></i>
+                        </button>
+                            ${newBadge}
+                        </div>
+                        
+                        <!-- Body -->
+                        <div class="card-body d-flex flex-column p-3">
+                            <!-- Tên SP -->
+                            <h6 class="card-title text-truncate fw-bold mb-2">
+                                <a href="/products/detail/${p.id}" class="text-decoration-none text-dark" title="${p.name}">${p.name}</a>
+                            </h6>
+                            
+                            <div class="text-muted small mb-3">
+                                <i class="bi bi-clock"></i> Đăng: ${new Date(p.created_at).toLocaleDateString('vi-VN')}
+                            </div>
+
+                            <!-- Giá & Info -->
+                            <div class="mt-auto">
+                                ${buyNowHtml}
+                                <h5 class="text-primary fw-bold mb-2">${formatCurrency(p.current_price)}</h5>
+                                
+                                <div class="bg-light rounded p-2 small">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span class="text-muted">Bidder:</span>
+                                        <span class="fw-bold text-dark">${maskName(p.bidder_name)}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-muted">Lượt ra giá:</span>
+                                        <span class="fw-bold text-dark">${p.bid_count}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="card-footer bg-white border-top-0 pt-0 text-center">
+                            <hr class="my-2">
+                            <small class="text-danger fw-bold">
+                                <i class="bi bi-hourglass-split"></i> ${formatTimeLeft(p.end_time)}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+
+            $('#search-container').html(html);
+            renderPagination(data.currentPage, data.totalPages);
+        });
+    }
+
+    function renderPagination(current, total) {
+        if (total <= 1) return; 
+
+        let html = '';
+        const prevDisabled = current === 1 ? 'disabled' : '';
+        const nextDisabled = current === total ? 'disabled' : '';
+
+        html += `
+        <li class="page-item ${prevDisabled}">
+            <a class="page-link" href="javascript:void(0)" onclick="if(!this.classList.contains('disabled')) searchProducts(${current - 1})">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>`;
+        
+        for (let i = 1; i <= total; i++) {
+            const active = i === current ? 'active' : '';
+            html += `<li class="page-item ${active}"><a class="page-link" href="javascript:searchProducts(${i})">${i}</a></li>`;
+        }
+        
+        html += `
+        <li class="page-item ${nextDisabled}">
+            <a class="page-link" href="javascript:void(0)" onclick="if(!this.classList.contains('disabled')) searchProducts(${current + 1})">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>`;
+        
+        $('#pagination-container').html(html);
+    }
+
+    $(document).ready(function() {
+        searchProducts(1);
+    });
+</script>
+{{/section}}
