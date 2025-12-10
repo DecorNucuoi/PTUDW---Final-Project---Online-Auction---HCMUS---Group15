@@ -1,4 +1,4 @@
-# 🛒 Online Auction - Sàn Đấu Giá Trực Tuyến
+# Online Auction - Sàn Đấu Giá Trực Tuyến
 
 > **Đồ án cuối kỳ - Phát triển Ứng dụng Web**
 > Nhóm 15 - HCMUS
@@ -19,7 +19,7 @@ npm install
 ```
 *Các gói chính: `express`, `knex`, `pg`, `bcryptjs`, `nodemailer`, `multer`, `dotenv`, `express-handlebars`.*
 
-## 🚀 Khởi Chạy Ứng Dụng
+## Khởi Chạy Ứng Dụng
 
 Sau khi cấu hình xong, chạy lệnh sau để bật Server:
 
@@ -32,7 +32,7 @@ Truy cập: **[http://localhost:3000](http://localhost:3000)**
 
 ---
 
-## 📂 Cấu Trúc Thư Mục
+## Cấu Trúc Thư Mục
 
 ```
 .
