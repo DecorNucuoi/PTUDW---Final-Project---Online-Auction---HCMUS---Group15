@@ -46,7 +46,6 @@ Truy cập: **[http://localhost:3000](http://localhost:3000)**
 │   ├── partials/   # Thành phần dùng chung (Sidebar, Header...)
 │   └── vwProduct/  # Các trang sản phẩm
 ├── app.js          # File chạy chính
-├── organize-images.js # Script tải ảnh
 └── .env            # Biến môi trường (Không up lên Git)
 ```
 
