@@ -7,7 +7,7 @@ Website đấu giá trực tuyến cho phép người dùng tham gia đấu giá
 
 ![NodeJS](https://img.shields.io/badge/Node.js-18.x-green) ![Express](https://img.shields.io/badge/Express-4.x-blue) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-336791) ![Bootstrap](https://img.shields.io/badge/Bootstrap-5-purple)
 
-## 🛠 Cài Đặt & Cấu Hình
+## Cài Đặt & Cấu Hình
 
 ### 1. Yêu cầu hệ thống
 - [Node.js](https://nodejs.org/) (v16 trở lên).
