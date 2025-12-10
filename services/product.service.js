@@ -4,6 +4,17 @@ export function findAll() {
   return db('ptoducts');
 }
 
+export function findAllWithSellerName() {
+    return db('products')
+        .join('users', 'products.seller_id', 'users.id')
+        .select('products.*', 'users.full_name as seller_name')
+        .orderBy('products.created_at', 'desc');
+}
+
+export function del(id) {
+  return db('products').where('id', id).del();
+}
+
 export function findTop5EndingSoon() {
     const list = db('products')
         .where('end_time', '>', new Date())

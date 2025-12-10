@@ -1,0 +1,40 @@
+<div class="card shadow-sm">
+  <div class="card-header bg-white py-3">
+    <h5 class="mb-0 text-success">
+      <i class="bi bi-plus-circle me-2"></i> Thêm mới Danh mục
+    </h5>
+  </div>
+  <div class="card-body">
+    <form method="post" action="">
+      
+      <div class="mb-3">
+        <label for="txtName" class="form-label fw-bold">Tên danh mục</label>
+        <input type="text" class="form-control" id="txtName" name="name" 
+               placeholder="Ví dụ: Laptop, Đồng hồ..." autofocus required>
+      </div>
+
+      <div class="mb-3">
+        <label for="selParent" class="form-label fw-bold">Danh mục cha</label>
+        <select class="form-select" id="selParent" name="parent_id">
+          <option value="">-- Là danh mục gốc (Root) --</option>
+          
+          {{#each rootCategories}}
+            <option value="{{id}}">{{name}}</option>
+          {{/each}}
+        </select>
+        <div class="form-text text-muted">
+            Để trống nếu bạn muốn tạo danh mục cấp 1 (lớn nhất). Chọn một mục nếu muốn tạo danh mục con.
+        </div>
+      </div>
+
+      <div class="mt-4 d-flex justify-content-between">
+        <a class="btn btn-outline-secondary" href="/admin/categories" role="button">
+          <i class="bi bi-arrow-left"></i> Quay lại
+        </a>
+        <button type="submit" class="btn btn-success">
+          <i class="bi bi-check2"></i> Lưu lại
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,35 @@
+<div class="card shadow-sm">
+    <h5 class="card-header bg-white py-3 text-info">
+        <i class="bi bi-info-circle-fill"></i> Chi tiết người dùng #{{user.id}}
+    </h5>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-3 fw-bold">Họ và tên:</div>
+            <div class="col-md-9">{{user.full_name}}</div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-3 fw-bold">Email:</div>
+            <div class="col-md-9">{{user.email}}</div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-3 fw-bold">Vai trò:</div>
+            <div class="col-md-9">
+                {{#if (isEqual user.role 2)}}<span class="badge bg-dark">Administrator</span>
+                {{else if (isEqual user.role 1)}}<span class="badge bg-success">Seller</span>
+                {{else}}<span class="badge bg-secondary">Bidder</span>{{/if}}
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-3 fw-bold">Địa chỉ:</div>
+            <div class="col-md-9">{{user.address}}</div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-3 fw-bold">Ngày tạo:</div>
+            <div class="col-md-9">{{user.created_at}}</div>
+        </div>
+    </div>
+    <div class="card-footer bg-white">
+        <a href="/admin/users" class="btn btn-secondary">Quay lại danh sách</a>
+        <a href="/admin/users/edit/{{user.id}}" class="btn btn-primary">Chỉnh sửa</a>
+    </div>
+</div>

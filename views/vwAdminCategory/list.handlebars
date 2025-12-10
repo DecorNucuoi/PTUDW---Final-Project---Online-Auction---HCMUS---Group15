@@ -1,0 +1,69 @@
+<div class="card shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+        <h5 class="mb-0 text-primary">
+            <i class="bi bi-list-ul me-2"></i> Quản lý Danh mục
+        </h5>
+        <a href="/admin/categories/add" class="btn btn-success btn-sm">
+            <i class="bi bi-plus-lg"></i> Thêm mới
+        </a>
+    </div>
+    
+    <div class="card-body">
+        {{#if err_message}}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> {{err_message}}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {{/if}}
+        {{#if this.empty}}
+            <div class="text-center py-4 text-muted">
+                <i class="bi bi-folder-x fs-1"></i>
+                <p class="mt-2">Chưa có danh mục nào.</p>
+            </div>
+        {{else}}
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered align-middle">
+                    <thead class="table-light text-center">
+                        <tr>
+                            <th style="width: 50px;">#ID</th>
+                            <th>Tên danh mục</th>
+                            <th>Cấp cha</th>
+                            <th style="width: 150px;">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each categories}}
+                        <tr>
+                            <td class="text-center fw-bold">{{id}}</td>
+                            <td>{{name}}</td>
+                            <td class="text-center">
+                                {{#if parent_id}}
+                                    <span class="badge bg-secondary">Con của #{{parent_id}}</span>
+                                {{else}}
+                                    <span class="badge bg-primary">Danh mục gốc</span>
+                                {{/if}}
+                            </td>
+                            <td class="text-center">
+                                <a href="/admin/categories/edit?id={{id}}" class="btn btn-sm btn-primary me-1" title="Chỉnh sửa">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+
+                                <form action="/admin/categories/delete" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa danh mục này? Lưu ý: Các sản phẩm thuộc danh mục này có thể bị ảnh hưởng.');">
+                                    <input type="hidden" name="id" value="{{id}}">
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Xóa">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        {{/if}}
+    </div>
+    
+    <div class="card-footer text-muted small">
+        Tổng cộng: {{categories.length}} danh mục.
+    </div>
+</div>

@@ -1,0 +1,84 @@
+<div class="card shadow-sm">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 text-primary">
+            <i class="bi bi-box-seam me-2"></i> Quản lý Sản phẩm
+        </h5>
+    </div>
+
+    <div class="card-body">
+        {{#if empty}}
+            <div class="text-center py-4 text-muted">
+                <i class="bi bi-inbox fs-1"></i>
+                <p class="mt-2">Chưa có sản phẩm nào trong hệ thống.</p>
+            </div>
+        {{else}}
+            <div class="table-responsive">
+                <table class="table align-middle table-hover table-bordered">
+                    <thead class="table-light text-center">
+                        <tr>
+                            <th style="width: 40%">Sản phẩm</th>
+                            <th>Giá hiện tại</th>
+                            <th>Người bán</th> 
+                            <th>Trạng thái</th>
+                            <th>Xóa</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each products}}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <a href="/products/detail/{{id}}" target="_blank">
+                                        <img src="/static/imgs/sp/{{id}}/main_thumbs.jpg" 
+                                             class="rounded me-2 border" 
+                                             style="width: 50px; height: 50px; object-fit: cover;"
+                                             onerror="this.src='https://placehold.co/50x50?text=No+Img'">
+                                    </a>
+                                    <div class="text-truncate" style="max-width: 250px;">
+                                        <a href="/products/detail/{{id}}" target="_blank" class="text-decoration-none fw-bold text-dark">
+                                            {{name}}
+                                        </a>
+                                        <br>
+                                        <small class="text-muted">Đăng ngày: {{created_at}}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <td class="text-danger fw-bold text-end">
+                                {{format_currency current_price}}
+                            </td>
+
+                            <td>
+                                <i class="bi bi-shop"></i> {{seller_name}}
+                                <br>
+                                <small class="text-muted">ID: {{seller_id}}</small>
+                            </td>
+
+                            <td class="text-center">
+                                {{#if (isEqual status 1)}}
+                                    <span class="badge bg-success">Đang đấu</span>
+                                {{else}}
+                                    <span class="badge bg-secondary">Kết thúc</span>
+                                {{/if}}
+                            </td>
+
+                            <td class="text-center">
+                                <form method="POST" action="/admin/products/delete" class="d-inline" onsubmit="return confirm('CẢNH BÁO: Bạn có chắc chắn muốn gỡ bỏ sản phẩm này không? Hành động này không thể hoàn tác!');">
+                                    <input type="hidden" name="id" value="{{id}}">
+                                    <button type="submit" class="btn btn-sm btn-danger mb-1" title="Gỡ bỏ sản phẩm">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        {{/if}}
+    </div>
+
+    <div class="card-footer text-muted small">
+        Tổng cộng: {{products.length}} sản phẩm.
+    </div>
+</div>

@@ -8,6 +8,9 @@ import accountRouter from './routes/account.route.js';
 import productRouter from './routes/product.route.js';
 import homeRouter from './routes/home.route.js';
 import watchlistRouter from './routes/watchlist.route.js';
+import adminCategoryRouter from './routes/admin-category.route.js';
+import adminProductRouter from './routes/admin-product.route.js';
+import adminUserRouter from './routes/admin-user.route.js';
 import * as categoryService from './services/category.service.js';
 import { isAuth , isAdmin} from "./middlewares/auth.mdw.js";
 
@@ -30,6 +33,9 @@ app.engine('handlebars', engine({helpers: {
     section: expressHandlebarsSections(),
     isEqual: function (a, b) {
       return a === b;
+    },
+    isNotEqual: function (a, b) {
+      return a !== b;
     },
     format_remainingTime: function (endDate) {
       const now = new Date();
@@ -72,6 +78,9 @@ app.use('/categories', categoryRouter);
 app.use('/account', accountRouter);
 app.use('/products', productRouter);
 app.use('/watchlist', watchlistRouter);
+app.use('/admin/categories', isAuth, isAdmin, adminCategoryRouter);
+app.use('/admin/products', isAuth, isAdmin, adminProductRouter);
+app.use('/admin/users', isAuth, isAdmin, adminUserRouter);
 app.use('/', homeRouter);
 
 app.listen(3000, () => {

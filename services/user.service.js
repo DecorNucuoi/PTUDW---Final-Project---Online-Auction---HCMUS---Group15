@@ -110,3 +110,48 @@ export async function isPendingUpgrade(userId) {
         .first();
     return !!request; 
 }
+
+
+export function findAll() {
+    return db('users').orderBy('id', 'asc');
+}
+
+
+export async function del(id) {
+    return db.transaction(async trx => {
+        await trx('bids').where('bidder_id', id).del();
+        await trx('watchlists').where('user_id', id).del();
+        await trx('upgrade_requests').where('user_id', id).del();
+        await trx('products').where('seller_id', id).del();
+        await trx('users').where('id', id).del();
+    });
+}
+
+export function patch(id, entity) {
+    return db('users').where('id', id).update(entity);
+}
+
+export function findPendingUpgradeRequests() {
+    return db('upgrade_requests')
+        .join('users', 'upgrade_requests.user_id', 'users.id')
+        .where('upgrade_requests.status', 0)
+        .select(
+            'upgrade_requests.id as request_id', 
+            'users.id', 
+            'users.full_name', 
+            'users.email', 
+            'upgrade_requests.created_at as request_time'
+        );
+}
+
+export async function approveUpgrade(requestId, userId) {
+    return db.transaction(async trx => {
+        await trx('users').where('id', userId).update({ role: 1 });
+
+        await trx('upgrade_requests').where('id', requestId).update({ status: 1 });
+    });
+}
+
+export async function rejectUpgrade(requestId) {
+    return db('upgrade_requests').where('id', requestId).update({ status: 2 });
+}
