@@ -1,87 +1,517 @@
 {{#section 'css'}}
 <script src="https://cdn.tiny.cloud/1/ajci3viw6u1cl2bd8mpphlgzvft1t3c0nvf0cbbfu4f932k1/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<style>
+    .upload-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    
+    .upload-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        padding: 2rem;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .upload-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="%23ffffff" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>') repeat;
+        opacity: 0.1;
+    }
+    
+    .upload-header h2 {
+        position: relative;
+        z-index: 1;
+        margin: 0;
+        font-weight: 700;
+    }
+    
+    .upload-header p {
+        position: relative;
+        z-index: 1;
+        margin: 0.5rem 0 0;
+        opacity: 0.9;
+    }
+    
+    .upload-form {
+        background: var(--bg-white);
+        border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+        border: 1px solid var(--border-color);
+        border-top: none;
+        padding: 2rem;
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .form-section {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: var(--bg-gray);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-light);
+    }
+    
+    .form-section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control, .form-select {
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 0.75rem 1rem;
+        transition: var(--transition);
+        background: var(--bg-white);
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
+        background: var(--bg-white);
+    }
+    
+    .image-upload {
+        border: 2px dashed var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 2rem;
+        text-align: center;
+        transition: var(--transition);
+        background: var(--bg-white);
+    }
+    
+    .image-upload:hover {
+        border-color: var(--primary-color);
+        background: rgb(37 99 235 / 0.02);
+    }
+    
+    .image-upload i {
+        font-size: 2.5rem;
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+        display: block;
+    }
+    
+    .submit-section {
+        text-align: center;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-light);
+    }
+    
+    .btn-submit {
+        background: linear-gradient(135deg, var(--success-color), #059669);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        font-size: 1rem;
+        transition: var(--transition);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .btn-submit:hover {
+        background: linear-gradient(135deg, #059669, #047857);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+        color: white;
+    }
+
+    /* Price Input Styles */
+    .price-input-container {
+        display: flex;
+        align-items: center;
+        background: var(--bg-white);
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        transition: var(--transition);
+    }
+
+    .price-input-container:focus-within {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
+    }
+
+    .currency-symbol {
+        padding: 0.75rem 1rem;
+        background: var(--bg-gray);
+        border-right: 1px solid var(--border-color);
+        font-weight: 600;
+        color: var(--text-color);
+    }
+
+    .price-input {
+        flex: 1;
+        border: none;
+        padding: 0.75rem;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--danger-color);
+        text-align: center;
+        background: transparent;
+    }
+
+    .price-input:focus {
+        outline: none;
+    }
+
+    .price-controls {
+        display: flex;
+        flex-direction: column;
+        border-left: 1px solid var(--border-color);
+    }
+
+    .btn-increment, .btn-decrement {
+        background: var(--bg-gray);
+        border: none;
+        padding: 0.25rem 0.75rem;
+        cursor: pointer;
+        transition: var(--transition);
+        color: var(--text-color);
+        font-size: 0.85rem;
+    }
+
+    .btn-increment {
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .btn-increment:hover {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-decrement:hover {
+        background: var(--danger-color);
+        color: white;
+    }
+</style>
 <script>
   tinymce.init({
     selector: '#description',
+    height: 300,
     plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
     toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+    skin: 'oxide',
+    content_css: 'default',
+    setup: function(editor) {
+      editor.on('init', function() {
+        // Form validation
+        const form = document.getElementById('uploadForm');
+        if (form) {
+          form.addEventListener('submit', function(e) {
+            const content = tinymce.get('description').getContent();
+            if (!content || content.trim() === '') {
+              e.preventDefault();
+              alert('Vui lòng nhập mô tả sản phẩm!');
+              tinymce.get('description').focus();
+              return false;
+            }
+          });
+        }
+      });
+    }
   });
+
+  // Image validation and preview
+  document.addEventListener('DOMContentLoaded', function() {
+    const imageInput = document.getElementById('productImages');
+    const imagePreview = document.getElementById('imagePreview');
+
+    if (imageInput) {
+      imageInput.addEventListener('change', function(e) {
+        const files = e.target.files;
+        
+        // Validate số lượng ảnh
+        if (files.length < 4) {
+          alert('Vui lòng chọn tối thiểu 4 ảnh!');
+          this.value = '';
+          imagePreview.innerHTML = '';
+          return false;
+        }
+        
+        if (files.length > 10) {
+          alert('Tối đa 10 ảnh!');
+          this.value = '';
+          imagePreview.innerHTML = '';
+          return false;
+        }
+
+        // Preview images
+        imagePreview.innerHTML = '';
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          
+          // Validate file size (5MB)
+          if (file.size > 5 * 1024 * 1024) {
+            alert(`File ${file.name} quá lớn! Tối đa 5MB mỗi ảnh.`);
+            this.value = '';
+            imagePreview.innerHTML = '';
+            return false;
+          }
+
+          // Create preview
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            const col = document.createElement('div');
+            col.className = 'col-md-3 col-sm-4 col-6';
+            
+            const img = document.createElement('img');
+            img.src = event.target.result;
+            img.className = 'img-fluid rounded shadow-sm';
+            img.style.height = '120px';
+            img.style.objectFit = 'cover';
+            img.style.width = '100%';
+            
+            if (i === 0) {
+              const badge = document.createElement('div');
+              badge.className = 'badge bg-primary position-absolute top-0 start-0 m-2';
+              badge.textContent = 'Thumbnail';
+              col.style.position = 'relative';
+              col.appendChild(badge);
+            }
+            
+            col.appendChild(img);
+            imagePreview.appendChild(col);
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+
+    // Format price inputs with thousand separators
+    const priceInputs = document.querySelectorAll('input[name="start_price"], input[name="step_price"], input[name="buy_now_price"]');
+    priceInputs.forEach(input => {
+      input.addEventListener('input', function(e) {
+        let value = this.value.replace(/,/g, '');
+        if (value && !isNaN(value)) {
+          // Store cursor position
+          const cursorPos = this.selectionStart;
+          const oldLength = this.value.length;
+          
+          // Format with commas
+          this.value = Number(value).toLocaleString('en-US');
+          
+          // Restore cursor position adjusted for new commas
+          const newLength = this.value.length;
+          const newCursorPos = cursorPos + (newLength - oldLength);
+          this.setSelectionRange(newCursorPos, newCursorPos);
+        }
+      });
+    });
+
+    // Remove commas before form submission
+    const uploadForm = document.getElementById('uploadForm');
+    if (uploadForm) {
+      uploadForm.addEventListener('submit', function(e) {
+        priceInputs.forEach(input => {
+          if (input.value) {
+            input.value = input.value.replace(/,/g, '');
+          }
+        });
+      });
+    }
+  });
+
+  function incrementPrice(inputName) {
+    const input = document.querySelector(`input[name="${inputName}"]`);
+    const step = parseFloat(input.dataset.step) || 1;
+    let currentValue = parseFloat(input.value.replace(/,/g, '')) || 0;
+    currentValue += step;
+    input.value = Number(currentValue).toLocaleString('en-US');
+  }
+
+  function decrementPrice(inputName) {
+    const input = document.querySelector(`input[name="${inputName}"]`);
+    const step = parseFloat(input.dataset.step) || 1;
+    let currentValue = parseFloat(input.value.replace(/,/g, '')) || 0;
+    currentValue -= step;
+    if (currentValue >= 0) {
+      input.value = Number(currentValue).toLocaleString('en-US');
+    }
+  }
 </script>
 {{/section}}
 
-<div class="card shadow-sm">
-  <h5 class="card-header bg-white">
-    <i class="bi bi-plus-circle"></i> Đăng sản phẩm mới
-  </h5>
-  <div class="card-body">
+<div class="upload-container">
+    <div class="upload-header">
+        <h2><i class="bi bi-plus-circle me-2"></i>List Your Item</h2>
+        <p>Create a compelling auction listing to attract bidders</p>
+    </div>
     
-    {{#if err_message}}
-        <div class="alert alert-danger">{{err_message}}</div>
-    {{/if}}
+    <div class="upload-form">
+    
+        {{#if err_message}}
+            <div class="alert alert-danger border-0 rounded-3">
+                <i class="bi bi-exclamation-triangle me-2"></i>{{err_message}}
+            </div>
+        {{/if}}
 
-    <form method="post" enctype="multipart/form-data">
-        
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold">Tên sản phẩm</label>
-                <input type="text" class="form-control" name="name" required>
-            </div>
-            
-            <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold">Danh mục</label>
-                <select class="form-select" name="category_id">
-                    {{#each categories}}
-                        <option value="{{id}}">{{name}}</option>
-                    {{/each}}
-                </select>
-            </div>
-        </div>
+        <form method="post" enctype="multipart/form-data" id="uploadForm">
+            <!-- Basic Information -->
+            <div class="form-section">
+                <h4 class="form-section-title">
+                    <i class="bi bi-info-circle"></i>Basic Information
+                </h4>
+                
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label class="form-label">Item Name *</label>
+                        <input type="text" class="form-control" name="name" placeholder="Enter a descriptive title..." required>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Category *</label>
+                        <select class="form-select" name="category_id" required>
+                            <option value="">Select category</option>
+                            {{#each categories}}
+                                {{#if parent_id}}
+                                <option value="{{id}}">{{name}}</option>
+                                {{/if}}
+                            {{/each}}
+                        </select>
+                    </div>
+                </div>
 
-        <div class="row">
-            <div class="col-md-4 mb-3">
-                <label class="form-label fw-bold">Giá khởi điểm</label>
-                <input type="number" class="form-control" name="start_price" required>
-            </div>
-            <div class="col-md-4 mb-3">
-                <label class="form-label fw-bold">Bước giá</label>
-                <input type="number" class="form-control" name="step_price" required>
-            </div>
-            <div class="col-md-4 mb-3">
-                <label class="form-label fw-bold">Giá mua ngay (Optional)</label>
-                <input type="number" class="form-control" name="buy_now_price" placeholder="Bỏ trống nếu không bán ngay">
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold">Hình ảnh (Ít nhất 3 ảnh)</label>
-                <input type="file" class="form-control" name="imgs" multiple required accept="image/*">
-                <div class="form-text">Ảnh đầu tiên sẽ là ảnh đại diện (Thumbnail).</div>
+                <div class="mb-3">
+                    <label class="form-label">Description *</label>
+                    <textarea id="description" name="description" placeholder="Describe your item in detail..."></textarea>
+                </div>
             </div>
 
-            <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold">Thời gian kết thúc</label>
-                <input type="datetime-local" class="form-control" name="end_time" required>
+            <!-- Pricing & Auction Settings -->
+            <div class="form-section">
+                <h4 class="form-section-title">
+                    <i class="bi bi-currency-dollar"></i>Pricing & Auction Settings
+                </h4>
+                
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Starting Price *</label>
+                        <div class="price-input-container">
+                            <span class="currency-symbol">$</span>
+                            <input type="text" class="price-input" name="start_price" 
+                                   placeholder="0" data-step="1" required>
+                            <div class="price-controls">
+                                <button type="button" class="btn-increment" onclick="incrementPrice('start_price')">
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                                <button type="button" class="btn-decrement" onclick="decrementPrice('start_price')">
+                                    <i class="bi bi-dash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Bid Increment *</label>
+                        <div class="price-input-container">
+                            <span class="currency-symbol">$</span>
+                            <input type="text" class="price-input" name="step_price" 
+                                   placeholder="1" data-step="1" required>
+                            <div class="price-controls">
+                                <button type="button" class="btn-increment" onclick="incrementPrice('step_price')">
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                                <button type="button" class="btn-decrement" onclick="decrementPrice('step_price')">
+                                    <i class="bi bi-dash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Buy Now Price <small class="text-muted">(optional)</small></label>
+                        <div class="price-input-container">
+                            <span class="currency-symbol">$</span>
+                            <input type="text" class="price-input" name="buy_now_price" 
+                                   placeholder="0" data-step="10">
+                            <div class="price-controls">
+                                <button type="button" class="btn-increment" onclick="incrementPrice('buy_now_price')">
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                                <button type="button" class="btn-decrement" onclick="decrementPrice('buy_now_price')">
+                                    <i class="bi bi-dash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Auction End Time *</label>
+                        <input type="datetime-local" class="form-control" name="end_time" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="form-check mt-4">
+                            <input class="form-check-input" type="checkbox" id="auto_extend" name="auto_extend" checked>
+                            <label class="form-check-label" for="auto_extend">
+                                <strong>Auto-extend auction</strong><br>
+                                <small class="text-muted">Automatically extend by 10 minutes if bid is placed in the last 5 minutes</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="allow_newbie" name="allow_newbie" checked>
+                            <label class="form-check-label" for="allow_newbie">
+                                <strong>Cho phép người mua chưa có đánh giá tham gia đấu giá</strong><br>
+                                <small class="text-muted">Nếu bỏ chọn, chỉ người dùng có điểm đánh giá > 0 mới được phép ra giá</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <div class="form-check mb-3">
-            <input class="form-check-input" type="checkbox" name="auto_extend" id="auto_extend" checked>
-            <label class="form-check-label" for="auto_extend">
-                Tự động gia hạn (Thêm 10 phút nếu có bid mới trước khi hết giờ 5 phút)
-            </label>
-        </div>
+            <!-- Images -->
+            <div class="form-section">
+                <h4 class="form-section-title">
+                    <i class="bi bi-images"></i>Photos
+                </h4>
+                
+                <div class="image-upload">
+                    <i class="bi bi-cloud-upload"></i>
+                    <h5>Upload Product Images</h5>
+                    <p class="text-muted">Select at least 4 high-quality photos (maximum 10). The first image will be your main thumbnail.</p>
+                    <input type="file" class="form-control" id="productImages" name="imgs" accept="image/*" multiple required 
+                           style="max-width: 400px; margin: 1rem auto;">
+                    <div class="form-text">Tối thiểu 4 ảnh, tối đa 10 ảnh | Supported: JPG, PNG, GIF (max 10MB each)</div>
+                    <div id="imagePreview" class="mt-3 row g-2"></div>
+                </div>
+            </div>
 
-        <div class="mb-3">
-            <label class="form-label fw-bold">Mô tả chi tiết</label>
-            <textarea id="description" name="description" rows="10"></textarea>
-        </div>
-
-        <div class="d-grid">
-            <button type="submit" class="btn btn-primary btn-lg">
-                <i class="bi bi-check2-circle"></i> Đăng bán ngay
-            </button>
-        </div>
-    </form>
+            <!-- Submit -->
+            <div class="submit-section">
+                <button type="submit" class="btn-submit">
+                    <i class="bi bi-upload me-2"></i>List Item for Auction
+                </button>
+                <div class="mt-3">
+                    <small class="text-muted">
+                        By listing this item, you agree to our <a href="#" class="text-primary">Terms of Service</a> 
+                        and <a href="#" class="text-primary">Seller Guidelines</a>
+                    </small>
+                </div>
+            </div>
+        </form>
   </div>
 </div>

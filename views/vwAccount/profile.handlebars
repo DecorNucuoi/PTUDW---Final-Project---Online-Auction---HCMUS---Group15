@@ -46,6 +46,8 @@
           </form>
 
           <hr class="my-4">
+          
+          {{#unless (isEqual user.role 2)}}
           <h5 class="fw-bold"><i class="bi bi-shop"></i> Quyền bán hàng</h5>
           
           {{#if (isEqual user.role 1)}}
@@ -72,6 +74,7 @@
                   </div>
               {{/if}}
           {{/if}}
+          {{/unless}}
         </div>
       </div>
     </div>

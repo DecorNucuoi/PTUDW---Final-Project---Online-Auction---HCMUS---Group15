@@ -79,3 +79,32 @@
         <i class="bi bi-info-circle-fill"></i> Lưu ý: Khi duyệt, người dùng sẽ lập tức có quyền đăng bán sản phẩm (Role: Seller).
     </div>
 </div>
+
+{{#section 'js'}}
+<script>
+    console.log('[ADMIN REQUESTS] Toast script loaded');
+    console.log('[ADMIN REQUESTS] showToast function exists:', typeof showToast);
+    
+    {{#if successMessage}}
+    console.log('[ADMIN REQUESTS] Success message:', {{{json successMessage}}});
+    if (typeof showToast === 'function') {
+        showToast({{{json successMessage}}}, 'success');
+    } else {
+        console.error('[ADMIN REQUESTS] showToast function not found!');
+    }
+    {{else}}
+    console.log('[ADMIN REQUESTS] No success message');
+    {{/if}}
+    
+    {{#if errorMessage}}
+    console.log('[ADMIN REQUESTS] Error message:', {{{json errorMessage}}});
+    if (typeof showToast === 'function') {
+        showToast({{{json errorMessage}}}, 'error');
+    } else {
+        console.error('[ADMIN REQUESTS] showToast function not found!');
+    }
+    {{else}}
+    console.log('[ADMIN REQUESTS] No error message');
+    {{/if}}
+</script>
+{{/section}}

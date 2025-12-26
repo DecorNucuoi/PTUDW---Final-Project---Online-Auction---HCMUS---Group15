@@ -1,178 +1,362 @@
 {{#section 'css'}}
 <style>
-    .badge-new {
-        animation: blink 2s infinite;
-    }
-    @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-    
-    .card-new {
-        border: 2px solid #ffc107 !important; /* Màu vàng */
+    .main-content {
+        min-height: 80vh;
     }
 
-    .product-img {
-        height: 220px;
-        object-fit: cover;
-        width: 100%;
+    .search-sidebar {
+        background: var(--bg-white);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-sm);
+        padding: 0;
+        overflow: hidden;
+        position: sticky;
+        top: 100px;
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+    }
+
+    .search-sidebar-header {
+        padding: 1.5rem;
+        background: var(--secondary-color);
+        border-bottom: 1px solid var(--border-color);
+        font-weight: 600;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .search-header {
+        background: var(--bg-white);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-color);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .search-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .search-query {
+        color: var(--primary-color);
+        font-weight: 700;
+    }
+
+    .filter-section {
+        padding: 1.5rem 0;
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    .filter-section:last-child {
+        border-bottom: none;
+    }
+
+    .filter-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 1rem;
+        padding: 0 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .results-count {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+
+    .loading-spinner {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 4rem 0;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-muted);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .enhanced-search-bar {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+
+    .enhanced-search-bar .form-control {
+        padding-right: 3rem;
+        border-radius: var(--radius-lg);
+        border: 2px solid var(--border-color);
+        transition: var(--transition);
+    }
+
+    .enhanced-search-bar .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
+    }
+
+    .enhanced-search-bar .search-btn {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: var(--primary-color);
+        border: none;
+        border-radius: var(--radius-md);
+        color: white;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .category-filter {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .category-option {
+        display: block;
+        padding: 0.5rem 1.5rem;
+        color: var(--text-color);
+        text-decoration: none;
+        transition: var(--transition);
+        border-left: 3px solid transparent;
+        cursor: pointer;
+    }
+
+    .category-option:hover,
+    .category-option.active {
+        background: var(--secondary-color);
+        color: var(--primary-color);
+        border-left-color: var(--primary-color);
+        text-decoration: none;
     }
 </style>
 {{/section}}
 
-<div class="container-fluid mt-4 mb-5">
-    
-    <div class="card shadow-sm mb-4">
-        <div class="card-body d-flex flex-wrap justify-content-between align-items-center py-2">
-            
-            <div class="mb-2 mb-md-0">
-                <h5 class="mb-0 text-secondary">
-                    Kết quả tìm kiếm: <span class="text-primary fw-bold">"{{keyword}}"</span>
-                </h5>
+<div class="main-content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Search Sidebar -->
+            <div class="col-lg-3 mb-4">
+                <div class="search-sidebar">
+                    <div class="search-sidebar-header">
+                        <i class="bi bi-sliders"></i>
+                        <span>Refine Search</span>
+                    </div>
+
+                    <!-- Enhanced Search -->
+                    <div class="filter-section">
+                        <h6 class="filter-title">
+                            <i class="bi bi-search"></i>Search Query
+                        </h6>
+                        <div class="px-3">
+                            <div class="enhanced-search-bar">
+                                <input type="text" class="form-control" placeholder="Search for items..."
+                                    id="searchInput" value="{{keyword}}">
+                                <button type="button" class="search-btn" id="newSearchBtn">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Categories Filter -->
+                    <div class="filter-section">
+                        <h6 class="filter-title">
+                            <i class="bi bi-grid-3x3-gap"></i>Categories
+                        </h6>
+                        <div class="category-filter">
+                            <a href="javascript:void(0)" class="category-option active" data-cat-id="0">
+                                <i class="bi bi-collection me-2"></i>All Categories
+                            </a>
+                            {{#each lcCategories}}
+                            {{#unless parent_id}}
+                            <a href="javascript:void(0)" class="category-option" data-cat-id="{{id}}">
+                                <i class="bi bi-tag me-2"></i>{{name}}
+                            </a>
+                            {{/unless}}
+                            {{/each}}
+                        </div>
+                    </div>
+
+                    <!-- Price Range Filter -->
+                    <div class="filter-section">
+                        <h6 class="filter-title">
+                            <i class="bi bi-currency-dollar"></i>Price Range
+                        </h6>
+                        <div class="px-3">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="number" class="form-control form-control-sm" placeholder="Min"
+                                        id="minPrice">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" class="form-control form-control-sm" placeholder="Max"
+                                        id="maxPrice">
+                                </div>
+                            </div>
+                            <button class="btn btn-outline-primary btn-sm w-100 mt-2" id="applyPriceFilter">
+                                Apply Filter
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Sort Options -->
+                    <div class="filter-section">
+                        <h6 class="filter-title">
+                            <i class="bi bi-sort-down"></i>Sort By
+                        </h6>
+                        <div class="px-3">
+                            <select class="form-select form-select-sm" id="sortSelect">
+                                <option value="time_desc">Newest First</option>
+                                <option value="time_asc">Ending Soon</option>
+                                <option value="price_desc">Price: High to Low</option>
+                                <option value="price_asc">Price: Low to High</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="d-flex align-items-center">
-                <label for="sortSelect" class="me-2 text-nowrap fw-bold"><i class="bi bi-sort-down"></i> Sắp xếp:</label>
-                <select class="form-select form-select-sm" id="sortSelect" onchange="searchProducts(1)" style="width: 250px;">
-                    <option value="time_desc">⏳ Thời gian kết thúc giảm dần</option>
-                    <option value="price_asc">💰 Giá tăng dần</option>
-                </select>
+            <!-- Main Content -->
+            <div class="col-lg-9">
+                <!-- Search Header -->
+                <div class="search-header">
+                    <h2 class="search-title">
+                        <i class="bi bi-search"></i>
+                        <span>Search Results</span>
+                    </h2>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="results-count" id="results-info">
+                            {{#if keyword}}
+                            Results for "<span class="search-query">{{keyword}}</span>"
+                            {{else}}
+                            Browse all products
+                            {{/if}}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loading -->
+                <div id="loading" class="loading-spinner" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+
+                <!-- Search Results -->
+                <div id="search-container" class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4">
+                    <!-- Products will be loaded here -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="empty-state" style="display: none;">
+                    <i class="bi bi-search"></i>
+                    <h4>No results found</h4>
+                    <p>Try different keywords or browse our categories.</p>
+                    <a href="/" class="btn btn-primary">Browse All Products</a>
+                </div>
+
+                <!-- Pagination -->
+                <nav class="mt-4">
+                    <ul id="pagination-container" class="pagination justify-content-center">
+                        <!-- Pagination will be generated by JavaScript -->
+                    </ul>
+                </nav>
             </div>
         </div>
     </div>
-
-    <div id="loading" class="text-center my-5" style="display:none;">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-    </div>
-
-    <div id="search-container" class="row g-3">
-    </div>
-
-    <nav class="mt-5">
-        <ul id="pagination-container" class="pagination justify-content-center"></ul>
-    </nav>
 </div>
 
 {{#section 'js'}}
 <script>
     const currentKeyword = "{{keyword}}";
-    
-    function formatCurrency(amount) {
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
-    }
-    
-    function maskName(name) {
-        if (!name) return 'Chưa có';
-        const len = name.length;
-        return '***' + name.substring(Math.floor(len / 2));
-    }
 
-    function isNewProduct(dateString) {
-        const created = new Date(dateString);
-        const now = new Date();
-        const diffMinutes = (now - created) / (1000 * 60);
-        return diffMinutes <= 60; // 60 phút
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('en-US').format(amount);
     }
 
     function formatTimeLeft(endDate) {
         const end = new Date(endDate);
         const now = new Date();
         const diff = end - now;
-        if (diff <= 0) return 'Đã kết thúc';
-        
+        if (diff <= 0) return 'Ended';
+
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
         const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        
-        if (days > 0) return `${days} ngày nữa`;
-        if (hours > 0) return `${hours} giờ nữa`;
-        return `${minutes} phút nữa`;
+
+        if (days > 0) return `${days}d ${hours}h`;
+        return `${hours}h ${Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))}m`;
     }
 
     function searchProducts(page) {
         const sort = $('#sortSelect').val();
-        
-        $('#loading').show();
-        $('#search-container').empty();
-        $('#pagination-container').empty(); 
 
-        $.getJSON(`/products/api/search?q=${currentKeyword}&page=${page}&sort=${sort}`, function(data) {
+        $('#loading').show();
+        $('#search-container').css('opacity', '0.5');
+
+        $.getJSON(`/products/api/search?q=${currentKeyword}&page=${page}&sort=${sort}`, function (data) {
             $('#loading').hide();
-            
+            $('#search-container').css('opacity', '1').empty();
+
             if (data.products.length === 0) {
-                $('#search-container').html(`
-                    <div class="col-12 text-center py-5">
-                        <i class="bi bi-emoji-frown display-1 text-muted"></i>
-                        <p class="mt-3 fs-4 text-muted">Không tìm thấy sản phẩm nào phù hợp.</p>
-                    </div>
-                `);
+                $('#search-container').html('<div class="col-12 text-center py-5 text-muted">No items found matching your search.</div>');
                 return;
             }
 
-            const html = data.products.map(p => {
-                const isNew = isNewProduct(p.created_at);
-                const borderClass = isNew ? 'card-new' : '';
-                const newBadge = isNew ? '<span class="position-absolute top-0 start-0 badge bg-warning text-dark m-2 badge-new shadow">NEW</span>' : '';
-
-                const buyNowHtml = p.buy_now_price ? 
-                    `<span class="badge bg-danger mb-1"><i class="bi bi-lightning-fill"></i> Mua ngay: ${formatCurrency(p.buy_now_price)}</span>` : '';
-
-                return `
-                <div class="col-6 col-md-4 col-lg-3">
-                    <div class="card h-100 shadow-sm ${borderClass} position-relative">
-                        <!-- Ảnh -->
-                        <div class="position-relative overflow-hidden">
+            const html = data.products.map(p => `
+                <div class="col">
+                     <div class="card-product h-100 ${p.isNew ? 'is-new' : ''}">
+                        <div class="card-img-container">
                             <a href="/products/detail/${p.id}">
-                                <img src="/static/imgs/sp/${p.id}/main_thumbs.jpg" class="card-img-top product-img" alt="${p.name}">
+                                <img src="${p.imagePath}" alt="${p.name}">
                             </a>
-                                <button class="btn btn-light shadow-sm position-absolute bottom-0 end-0 m-2 rounded-circle btn-watchlist" 
-                                    style="width: 35px; height: 35px; padding: 0; display: flex; align-items: center; justify-content: center; z-index: 10;"
-                                    data-id="${id}" 
-                                    title="Thêm vào yêu thích">
-                                <i class="bi bi-heart text-danger" style="font-size: 16px;"></i>
-                        </button>
-                            ${newBadge}
+                            <button class="btn btn-watchlist position-absolute bottom-0 end-0 m-2 rounded-circle shadow-sm" 
+                                    style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; z-index: 10;"
+                                    data-id="${p.id}">
+                                <i class="bi bi-heart" style="font-size: 0.9rem"></i>
+                            </button>
                         </div>
-                        
-                        <!-- Body -->
-                        <div class="card-body d-flex flex-column p-3">
-                            <!-- Tên SP -->
-                            <h6 class="card-title text-truncate fw-bold mb-2">
-                                <a href="/products/detail/${p.id}" class="text-decoration-none text-dark" title="${p.name}">${p.name}</a>
-                            </h6>
-                            
-                            <div class="text-muted small mb-3">
-                                <i class="bi bi-clock"></i> Đăng: ${new Date(p.created_at).toLocaleDateString('vi-VN')}
-                            </div>
-
-                            <!-- Giá & Info -->
-                            <div class="mt-auto">
-                                ${buyNowHtml}
-                                <h5 class="text-primary fw-bold mb-2">${formatCurrency(p.current_price)}</h5>
-                                
-                                <div class="bg-light rounded p-2 small">
-                                    <div class="d-flex justify-content-between mb-1">
-                                        <span class="text-muted">Bidder:</span>
-                                        <span class="fw-bold text-dark">${maskName(p.bidder_name)}</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between">
-                                        <span class="text-muted">Lượt ra giá:</span>
-                                        <span class="fw-bold text-dark">${p.bid_count}</span>
-                                    </div>
+                        <div class="card-body">
+                            <div class="meta-text mb-1">Lot ${p.id}</div>
+                            <a href="/products/detail/${p.id}">
+                                <h6 class="card-title">${p.name}</h6>
+                            </a>
+                            <div class="d-flex justify-content-between align-items-end mt-2">
+                                <div>
+                                    <div class="meta-text" style="font-size: 0.7rem;">Current Bid</div>
+                                    <div class="price-current">${formatCurrency(p.current_price)}</div>
+                                </div>
+                                <div class="time-remaining text-end">
+                                    <i class="bi bi-clock me-1"></i>${formatTimeLeft(p.end_time)}
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Footer -->
-                        <div class="card-footer bg-white border-top-0 pt-0 text-center">
-                            <hr class="my-2">
-                            <small class="text-danger fw-bold">
-                                <i class="bi bi-hourglass-split"></i> ${formatTimeLeft(p.end_time)}
-                            </small>
-                        </div>
                     </div>
                 </div>
-                `;
-            }).join('');
+            `).join('');
 
             $('#search-container').html(html);
             renderPagination(data.currentPage, data.totalPages);
@@ -180,7 +364,7 @@
     }
 
     function renderPagination(current, total) {
-        if (total <= 1) return; 
+        if (total <= 1) return;
 
         let html = '';
         const prevDisabled = current === 1 ? 'disabled' : '';
@@ -189,27 +373,144 @@
         html += `
         <li class="page-item ${prevDisabled}">
             <a class="page-link" href="javascript:void(0)" onclick="if(!this.classList.contains('disabled')) searchProducts(${current - 1})">
-                <span aria-hidden="true">&laquo;</span>
+                <i class="bi bi-chevron-left"></i>
             </a>
         </li>`;
-        
+
         for (let i = 1; i <= total; i++) {
             const active = i === current ? 'active' : '';
             html += `<li class="page-item ${active}"><a class="page-link" href="javascript:searchProducts(${i})">${i}</a></li>`;
         }
-        
+
         html += `
         <li class="page-item ${nextDisabled}">
             <a class="page-link" href="javascript:void(0)" onclick="if(!this.classList.contains('disabled')) searchProducts(${current + 1})">
-                <span aria-hidden="true">&raquo;</span>
+                <i class="bi bi-chevron-right"></i>
             </a>
         </li>`;
-        
+
         $('#pagination-container').html(html);
     }
 
-    $(document).ready(function() {
+    function performNewSearch() {
+        const newKeyword = $('#searchInput').val().trim();
+        if (newKeyword !== currentKeyword) {
+            currentKeyword = newKeyword;
+            // Update URL without reload
+            const url = new URL(window.location);
+            url.searchParams.set('q', currentKeyword);
+            window.history.replaceState({}, '', url);
+        }
         searchProducts(1);
+    }
+
+    // Enhanced functionality
+    $(document).ready(function () {
+        if (currentKeyword) {
+            searchProducts(1);
+        }
+
+        // New search functionality
+        $('#newSearchBtn').on('click', performNewSearch);
+        $('#searchInput').on('keyup', function (e) {
+            if (e.key === 'Enter') {
+                performNewSearch();
+            }
+        });
+
+        // Category filter
+        $('.category-option').on('click', function (e) {
+            e.preventDefault();
+            $('.category-option').removeClass('active');
+            $(this).addClass('active');
+            const catId = parseInt($(this).data('cat-id'));
+
+            // Update search with category filter
+            let params = `catId=${catId}&sort=${$('#sortSelect').val()}&page=1`;
+            if (currentKeyword) params += `&q=${encodeURIComponent(currentKeyword)}`;
+
+            $.getJSON(`/products/api/search?${params}`, function (data) {
+                updateResults(data);
+            });
+        });
+
+        // Sort change
+        $('#sortSelect').on('change', function () {
+            searchProducts(1);
+        });
+
+        // Price filter
+        $('#applyPriceFilter').on('click', function () {
+            const minPrice = $('#minPrice').val();
+            const maxPrice = $('#maxPrice').val();
+
+            let params = `sort=${$('#sortSelect').val()}&page=1`;
+            if (currentKeyword) params += `&q=${encodeURIComponent(currentKeyword)}`;
+            if (minPrice) params += `&minPrice=${minPrice}`;
+            if (maxPrice) params += `&maxPrice=${maxPrice}`;
+
+            $.getJSON(`/products/api/search?${params}`, function (data) {
+                updateResults(data);
+            });
+        });
     });
+
+    function updateResults(data) {
+        $('#loading').hide();
+
+        // Update results info
+        const total = data.total || 0;
+        let resultsText = '';
+        if (currentKeyword) {
+            resultsText = `${total} results for "<span class="search-query">${currentKeyword}</span>"`;
+        } else {
+            resultsText = `Showing ${data.products.length} of ${total} products`;
+        }
+        $('#results-info').html(resultsText);
+
+        if (data.products.length === 0) {
+            $('#empty-state').show();
+            $('#search-container').hide();
+            $('#pagination-container').empty();
+            return;
+        }
+
+        $('#empty-state').hide();
+        const html = data.products.map(p => `
+            <div class="col">
+                <div class="card-product h-100">
+                    <div class="card-img-container">
+                        <a href="/products/detail/${p.id}">
+                            <img src="${p.imagePath}" alt="${p.name}" loading="lazy">
+                        </a>
+                        <button class="btn btn-watchlist position-absolute" 
+                                style="top: 0.75rem; right: 0.75rem; width: 36px; height: 36px; padding: 0; z-index: 10;"
+                                data-id="${p.id}" title="Add to Watchlist">
+                            <i class="bi bi-heart"></i>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="meta-text mb-1">Lot #${p.id}</div>
+                        <h6 class="card-title">
+                            <a href="/products/detail/${p.id}">${p.name}</a>
+                        </h6>
+                        <div class="card-stats">
+                            <div>
+                                <div class="price-label">Current Bid</div>
+                                <div class="price-current">$${formatCurrency(p.current_price)}</div>
+                            </div>
+                            <div class="time-remaining">
+                                <i class="bi bi-clock"></i>
+                                <span>${formatTimeLeft(p.end_time)}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        $('#search-container').html(html).show();
+        renderPagination(data.currentPage, data.totalPages);
+    }
 </script>
 {{/section}}

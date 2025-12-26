@@ -1,0 +1,108 @@
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm" style="height: 80vh;">
+                <div class="card-header bg-white d-flex align-items-center">
+                    <a href="{{#if backUrl}}{{backUrl}}{{else}}javascript:history.back(){{/if}}" class="btn btn-sm btn-outline-secondary me-3">
+                        <i class="bi bi-arrow-left"></i>
+                    </a>
+                    <div>
+                        <h5 class="mb-0 fw-bold">{{partner.full_name}}</h5>
+                        <small class="text-muted">Chat History</small>
+                    </div>
+                </div>
+
+                <div class="card-body overflow-auto" id="chatBox" style="background-color: #f8f9fa;">
+                    {{#if empty}}
+                    <div class="text-center text-muted mt-5">
+                        <i class="bi bi-chat-dots fs-1"></i>
+                        <p>Chưa có tin nhắn nào. Hãy bắt đầu trò chuyện!</p>
+                    </div>
+                    {{else}}
+                    <div class="d-flex flex-column">
+                        {{#each messages}}
+                        <div class="mb-3 {{#if isSelf}}align-self-end text-end{{else}}align-self-start{{/if}}"
+                            style="max-width: 75%;">
+                            <div
+                                class="p-3 rounded-3 shadow-sm {{#if isSelf}}bg-primary text-white{{else}}bg-white text-dark border{{/if}}">
+                                {{message}}
+                            </div>
+                            <small class="text-muted" style="font-size: 0.75rem;">{{time}}</small>
+                        </div>
+                        {{/each}}
+                    </div>
+                    {{/if}}
+                </div>
+
+                <div class="card-footer bg-white">
+                    <form method="post" action="/chat/send" class="d-flex gap-2" id="chatForm">
+                        <input type="hidden" name="receiverId" value="{{receiverId}}">
+                        {{#if backUrl}}<input type="hidden" name="backUrl" value="{{backUrl}}">{{/if}}
+                        <input type="text" name="message" class="form-control" placeholder="Nhập tin nhắn..." required
+                            autofocus id="messageInput">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-send"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{#section 'js'}}
+<script>
+    // Auto scroll to bottom on load
+    const chatBox = document.getElementById('chatBox');
+    if (chatBox) {
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+    
+    // Handle form submission to prevent history stack buildup
+    const chatForm = document.getElementById('chatForm');
+    if (chatForm) {
+        chatForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const message = formData.get('message');
+            
+            if (!message.trim()) return;
+            
+            // Send via fetch
+            fetch('/chat/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams(formData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Use location.replace to avoid adding to history
+                    const receiverId = formData.get('receiverId');
+                    const backUrl = formData.get('backUrl');
+                    let redirectUrl = `/chat/with/${receiverId}`;
+                    
+                    if (backUrl) {
+                        redirectUrl += `?backUrl=${encodeURIComponent(backUrl)}`;
+                    }
+                    
+                    window.location.replace(redirectUrl);
+                }
+            })
+            .catch(error => {
+                console.error('Error sending message:', error);
+                alert('Lỗi gửi tin nhắn. Vui lòng thử lại.');
+            });
+        });
+    }
+</script>
+{{/section}}
+
+{{#section 'js'}}
+<script>
+    const chatBox = document.getElementById('chatBox');
+    chatBox.scrollTop = chatBox.scrollHeight;
+</script>
+{{/section}}

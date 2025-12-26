@@ -2,192 +2,1263 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bootstrap 5 Example</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
-  {{{_sections.css}}}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Auction</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    
+    <style>
+        /* Toast Notification Styles */
+        .toast-notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 400px;
+        }
+
+        .toast-notification {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 16px 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            animation: slideInRight 0.3s ease-out;
+            border-left: 4px solid;
+            min-width: 300px;
+            max-width: 400px;
+        }
+
+        .toast-notification.success {
+            border-left-color: #28a745;
+        }
+
+        .toast-notification.error {
+            border-left-color: #dc3545;
+        }
+
+        .toast-notification.warning {
+            border-left-color: #ffc107;
+        }
+
+        .toast-notification.info {
+            border-left-color: #17a2b8;
+        }
+
+        .toast-notification.hiding {
+            animation: slideOutRight 0.3s ease-out forwards;
+        }
+
+        .toast-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .toast-notification.success .toast-icon {
+            color: #28a745;
+        }
+
+        .toast-notification.error .toast-icon {
+            color: #dc3545;
+        }
+
+        .toast-notification.warning .toast-icon {
+            color: #ffc107;
+        }
+
+        .toast-notification.info .toast-icon {
+            color: #17a2b8;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+            color: #212529;
+        }
+
+        .toast-message {
+            font-size: 14px;
+            color: #6c757d;
+            line-height: 1.4;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #6c757d;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        .toast-close:hover {
+            color: #212529;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .toast-notification-container {
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+
+            .toast-notification {
+                min-width: auto;
+                max-width: none;
+            }
+        }
+    </style>
+    
+    {{{_sections.css}}}
 </head>
 
 <body>
-  <nav class="navbar navbar-expand-lg bg-body-tertiary shadow">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#">
-        <i class="bi bi-house-heart"></i>
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="/">
-              Home
+    <!-- Main Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <strong>AUCTION</strong><span style="color: var(--accent-primary);">.PRO</span>
             </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Link</a>
-          </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Dropdown
-            </a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#">Action</a></li>
-              <li><a class="dropdown-item" href="#">Another action</a></li>
-              <li>
-                <hr class="dropdown-divider">
-              </li>
-              <li><a class="dropdown-item" href="#">Something else here</a></li>
-            </ul>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link disabled" aria-disabled="true">Disabled</a>
-          </li>
-        </ul>
-        <form class="d-flex me-4" role="search" method="get" action="/products/search">
-          <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="q" />
-          <button class="btn btn-outline-success" type="submit">
-            <i class="bi bi-search"></i>
-          </button>
-        </form>
-        <ul class="navbar-nav mb-2 mb-lg-0">
-          {{#if isAuthenticated}}
             
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Hello <b>{{authUser.full_name}}</b>!
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li><a class="dropdown-item" href="/account/profile">
-              <i class="bi bi-person-circle"></i>
-                Profile</a></li>
-              <li><a class="dropdown-item" href="/account/change-password">
-              <i class="bi bi-key"></i>
-                Change Password</a></li>
-              <li>
-                <hr class="dropdown-divider">
-              </li>
-              <li><a class="dropdown-item" href="javascript:document.querySelector('#frmSignOut').submit();">
-              <i class="bi bi-box-arrow-right"></i>
-                Signout</a></li>
-            </ul>
-          </li>
-          <form method="post" action="/account/signout" id="frmSignOut"></form>
-          {{else}}
-          <li class="nav-item">
-            <a class="nav-link" aria-current="page" href="/account/signup">
-              <i class="bi bi-person-plus"></i>
-              Signup
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/account/signin">
-              <i class="bi bi-person-lock"></i>
-            Signin</a>
-          </li>
-          {{/if}}
-        </ul>
-      </div>
-    </div>
-  </nav>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-  <div class="container-fluid mt-4 mb-3">
-    <div class="row">
-      <div class="col-md-3">
-        <div class="card mb-3">
-          <h5 class="card-header">
-            Categories
-          </h5>
-          <div class="list-group list-group-flush">
-              {{#each lcCategories}}
-  
-              {{#unless parent_id}}
-              
-                <a href="/products/byCat?id={{id}}" class="list-group-item list-group-item-action bg-light fw-bold">
-                  <i class="bi bi-box-seam"></i> {{name}}
-                </a>
+            <!-- Search Bar (Centered Desktop) -->
+            <div class="collapse navbar-collapse justify-content-center" id="navbarContent">
+                <form class="search-bar mx-auto my-2 my-lg-0" role="search" method="get" action="/products/search">
+                    <input class="form-control" type="search" placeholder="Search for items, art, furniture..." aria-label="Search" name="q" />
+                    <button class="btn" type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </form>
 
-                {{#each ../lcCategories}}
-                
-                  {{#if (isEqual parent_id ../id)}}
-                    <a href="/products/byCat?id={{id}}" class="list-group-item list-group-item-action ps-5">
-                      <i class="bi bi-caret-right-fill text-secondary"></i> {{name}}
+                <!-- Right Side Actions -->
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+                    {{#if isAuthenticated}}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" style="color: var(--text-primary); font-weight: var(--font-weight-medium);">
+                                <i class="bi bi-person-circle fs-4 me-2"></i>
+                                <span class="d-none d-md-inline">{{authUser.full_name}}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                                <li><h6 class="dropdown-header">{{authUser.full_name}}</h6></li>
+                                
+                                {{!-- Nhóm 1: Common items for all users --}}
+                                <li><a class="dropdown-item" href="/account/profile"><i class="bi bi-person me-2"></i>Thông tin cá nhân</a></li>
+                                
+                                {{!-- Hide these for admin (role 2) --}}
+                                {{#unless (isEqual authUser.role 2)}}
+                                    <li><a class="dropdown-item" href="/account/watchlist"><i class="bi bi-heart me-2"></i>Sản phẩm yêu thích</a></li>
+                                    <li><a class="dropdown-item" href="/account/bidding"><i class="bi bi-hammer me-2"></i>Đấu giá của tôi</a></li>
+                                    <li><a class="dropdown-item" href="/account/won"><i class="bi bi-trophy me-2"></i>Đã thắng đấu giá</a></li>
+                                {{/unless}}
+                                
+                                {{!-- Admin Panel (role 2) --}}
+                                {{#if (isEqual authUser.role 2)}}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item fw-bold" href="/admin" style="color: var(--accent-primary);"><i class="bi bi-speedometer2 me-2"></i>Admin Dashboard</a></li>
+                                {{/if}}
+                                
+                                {{!-- Nhóm 2: Seller specific items (role 1) --}}
+                                {{#if (isEqual authUser.role 1)}}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><h6 class="dropdown-header text-muted" style="font-size: 0.75rem;">QUẢN LÝ BÁN HÀNG</h6></li>
+                                    <li><a class="dropdown-item" href="/products/upload"><i class="bi bi-plus-circle me-2"></i>Đăng sản phẩm mới</a></li>
+                                    <li><a class="dropdown-item" href="/account/posted"><i class="bi bi-shop-window me-2"></i>Tất cả sản phẩm</a></li>
+                                    <li><a class="dropdown-item" href="/account/posted?filter=active"><i class="bi bi-box-seam me-2"></i>Đang đấu giá</a></li>
+                                    <li><a class="dropdown-item" href="/account/posted?filter=ended"><i class="bi bi-archive me-2"></i>Đã kết thúc</a></li>
+                                {{/if}}
+                                
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="javascript:document.querySelector('#frmSignOut').submit();"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a>
+                                </li>
+                            </ul>
+                        </li>
+                        <form method="post" action="/account/signout" id="frmSignOut"></form>
+                    {{else}}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/account/signin" style="color: var(--text-primary); font-weight: var(--font-weight-medium);">Sign In</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn ms-2" href="/account/signup" style="background: var(--gradient-primary); border: none; color: var(--primary-white); font-weight: var(--font-weight-semibold); border-radius: 12px; padding: 0.75rem 1.5rem; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: var(--shadow-md); letter-spacing: 0.025em;" onmouseover="this.style.background='linear-gradient(135deg, #3730A3 0%, #4338CA 100%)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(79, 70, 229, 0.4)'" onmouseout="this.style.background='var(--gradient-primary)'; this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-md)'">Register</a>
+                        </li>
+                    {{/if}}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Category Toolbar with Mega Menu -->
+    <div class="category-bar">
+        <div class="container" style="position: relative;">
+            <!-- Left Navigation Button -->
+            <button class="category-nav-btn left" id="categoryNavLeft">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+            
+            <div class="category-nav" id="categoryNav">
+                <!-- Browse All Link -->
+                <div class="category-item" data-category-id="0">
+                    <a href="/products/byCat?id=0" class="category-link" style="font-weight: 600; color: #007bff;">
+                        <i class="bi bi-grid me-1"></i>Browse All
                     </a>
-                  {{/if}}
-                  
-                {{/each}} 
+                </div>
                 
-              {{/unless}}
-              
-            {{/each}}
-
-
-          </div>
+                {{#each megaMenuCategories}}
+                    <div class="category-item" data-category-id="{{id}}">
+                        <a href="/products/byCat?id={{id}}" class="category-link">
+                            {{name}}
+                            {{#if hasSubcategories}}
+                                <i class="bi bi-chevron-down ms-1" style="font-size: 0.7rem; opacity: 0.6;"></i>
+                            {{/if}}
+                        </a>
+                        
+                        {{#if hasSubcategories}}
+                            <div class="mega-menu">
+                                <div style="max-width: 1400px; margin: 0 auto; padding: 3rem 2rem;">
+                                    <h6 style="font-size: 1rem; font-weight: 600; color: var(--text-primary); margin-bottom: 1.5rem; text-align: center;">{{name}} Categories</h6>
+                                    
+                                    <!-- Subcategories Grid -->
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-bottom: 2.5rem;">
+                                        {{#if subcategoriesColumns}}
+                                            {{#each subcategoriesColumns}}
+                                                {{#each this}}
+                                                                    <div style="background: var(--surface-elevated); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border-light); box-shadow: var(--shadow-sm); transition: all 0.3s ease;" onmouseover="this.style.boxShadow='var(--shadow-lg)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='var(--shadow-sm)'; this.style.transform='translateY(0)'">
+                                                        <h6 style="font-weight: var(--font-weight-semibold); color: var(--text-primary); margin-bottom: 1rem; font-size: 1rem; border-bottom: 2px solid var(--accent-primary); padding-bottom: 0.5rem; display: inline-block;">{{name}}</h6>
+                                                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                                            <a href="/products/byCat?id={{id}}" style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: var(--gradient-surface); text-decoration: none; border-radius: 8px; color: var(--text-secondary); font-size: 0.9rem; transition: all 0.3s ease; border: 1px solid var(--border-light);" onmouseover="this.style.background='var(--gradient-primary)'; this.style.color='white'; this.style.transform='translateX(4px)'" onmouseout="this.style.background='var(--gradient-surface)'; this.style.color='var(--text-secondary)'; this.style.transform='translateX(0)'">
+                                                                <span>Tất cả {{name}}</span>
+                                                                <span style="font-size: 0.75rem; background: rgba(79, 70, 229, 0.1); color: var(--accent-primary); padding: 0.25rem 0.6rem; border-radius: 12px; font-weight: var(--font-weight-semibold);">{{productCount}}</span>
+                                                            </a>
+                                                            <a href="/products/search?q={{name}}" style="display: flex; align-items: center; padding: 0.5rem 1rem; background: transparent; text-decoration: none; color: var(--text-muted); font-size: 0.85rem; transition: all 0.3s ease;" onmouseover="this.style.color='var(--accent-primary)'; this.style.transform='translateX(4px)'" onmouseout="this.style.color='var(--text-muted)'; this.style.transform='translateX(0)'">
+                                                                <i class="bi bi-search me-2" style="font-size: 0.8rem;"></i>
+                                                                <span>Tìm kiếm {{name}}</span>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                {{/each}}
+                                            {{/each}}
+                                        {{/if}}
+                                    </div>
+                                    
+                                    <!-- View All Button -->
+                                    <div style="text-align: center; padding-top: 1rem; border-top: 1px solid var(--border-light);">
+                                        <a href="/products/byCat?id={{id}}" style="display: inline-flex; align-items: center; background: var(--gradient-primary); color: white; text-decoration: none; font-weight: var(--font-weight-bold); font-size: 1rem; padding: 1rem 2.5rem; border-radius: 16px; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); font-family: var(--font-primary); letter-spacing: 0.025em; box-shadow: 0 6px 20px rgba(79, 70, 229, 0.35); text-transform: uppercase; font-size: 0.85rem;"
+                                           onmouseover="this.style.background='linear-gradient(135deg, #3730A3 0%, #4338CA 100%)'; this.style.transform='translateY(-4px) scale(1.05)'; this.style.boxShadow='0 12px 40px rgba(79, 70, 229, 0.45)'" 
+                                           onmouseout="this.style.background='var(--gradient-primary)'; this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 6px 20px rgba(79, 70, 229, 0.35)'">
+                                            View All {{name}}
+                                            <i class="bi bi-arrow-right ms-2" style="font-size: 0.85rem; transition: transform 0.3s ease;" onmouseover="this.style.transform='translateX(4px)'" onmouseout="this.style.transform='translateX(0)'"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {{/if}}
+                    </div>
+                {{/each}}
+            </div>
+            
+            <!-- Right Navigation Button -->
+            <button class="category-nav-btn right" id="categoryNavRight">
+                <i class="bi bi-chevron-right"></i>
+            </button>
         </div>
-        <div class="card">
-          <h5 class="card-header">
-            Featured
-          </h5>
-          <div class="card-body">
-            <h5 class="card-title">Special title treatment</h5>
-            <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-            <a href="#" class="btn btn-primary">Go somewhere</a>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-9">
-        {{{body}}}
-      </div>
     </div>
-  </div>
-  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Main Content -->
+    <div class="container mt-5" style="min-height: 80vh;">
+        {{{body}}}
+    </div>
 
-  <script>
-      $(document).on('click', '.btn-watchlist', function(e) {
-          e.preventDefault();
-          e.stopPropagation();
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-hammer me-2"></i>AUCTION</h5>
+                    <p class="mb-3">The leading marketplace for unique items, art, furniture, and collectibles. Discover treasures and bid with confidence.</p>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="text-muted fs-4"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="text-muted fs-4"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="text-muted fs-4"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="text-muted fs-4"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-2 mb-4">
+                    <h6><i class="bi bi-cart-check me-2"></i>Buying</h6>
+                    <a href="#">How to buy</a>
+                    <a href="#">Payment types</a>
+                    <a href="#">Shipping info</a>
+                    <a href="#">Return policy</a>
+                </div>
+                <div class="col-md-2 mb-4">
+                    <h6><i class="bi bi-tag me-2"></i>Selling</h6>
+                    <a href="#">How to sell</a>
+                    <a href="#">Valuation guide</a>
+                    <a href="#">Seller terms</a>
+                    <a href="#">Commission rates</a>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h6><i class="bi bi-envelope me-2"></i>Stay Updated</h6>
+                    <p class="mb-3">Get notified about new auctions and exclusive deals.</p>
+                    <div class="input-group">
+                        <input type="email" class="newsletter-input" placeholder="Enter your email">
+                        <button class="newsletter-btn" type="button">
+                            <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="text-muted small mb-0">&copy; 2025 Online Auction Group 15. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="#" class="text-muted small me-3">Privacy Policy</a>
+                    <a href="#" class="text-muted small me-3">Terms of Service</a>
+                    <a href="#" class="text-muted small">Contact Us</a>
+                </div>
+            </div>
+        </div>
+    </footer>
 
-          const btn = $(this);
-          const icon = btn.find('i');
-          const productId = btn.data('id');
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Toast Notification System
+        function showToast(message, type = 'info', duration = 5000) {
+            const container = document.getElementById('toast-container');
+            if (!container) {
+                console.error('Toast container not found');
+                return;
+            }
 
-          btn.prop('disabled', true);
+            const icons = {
+                success: 'bi-check-circle-fill',
+                error: 'bi-x-circle-fill',
+                warning: 'bi-exclamation-triangle-fill',
+                info: 'bi-info-circle-fill'
+            };
 
-          $.ajax({
-              url: '/watchlist/api/add',
-              method: 'POST',
-              data: { id: productId },
-              success: function(response) {
-                  btn.prop('disabled', false);
-                  
-                  if (response.action === 'added') {
-                      icon.removeClass('bi-heart').addClass('bi-heart-fill');
-                      alert('Đã thêm vào danh sách yêu thích!');
-                  } else {
-                      icon.removeClass('bi-heart-fill').addClass('bi-heart');
-                      alert('Đã xóa khỏi danh sách yêu thích!');
-                  }
-              },
-              error: function(xhr) {
-                  btn.prop('disabled', false);
+            const titles = {
+                success: 'Thành công',
+                error: 'Lỗi',
+                warning: 'Cảnh báo',
+                info: 'Thông tin'
+            };
 
-                  if (xhr.status === 401) {
-                      const currentUrl = window.location.pathname + window.location.search;
-                      
-                      window.location.href = `/account/signin?retUrl=${encodeURIComponent(currentUrl)}`;
-                  } else {
-                      alert('Có lỗi xảy ra, vui lòng thử lại.');
-                  }
-              }
-          });
-      });
-  </script>
-  {{{_sections.js}}}
+            const toast = document.createElement('div');
+            toast.className = `toast-notification ${type}`;
+            toast.innerHTML = `
+                <div class="toast-icon">
+                    <i class="bi ${icons[type] || icons.info}"></i>
+                </div>
+                <div class="toast-content">
+                    <div class="toast-title">${titles[type] || titles.info}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="this.parentElement.remove()">
+                    <i class="bi bi-x"></i>
+                </button>
+            `;
+
+            container.appendChild(toast);
+
+            // Auto remove after duration
+            setTimeout(() => {
+                toast.classList.add('hiding');
+                setTimeout(() => {
+                    if (toast.parentElement) {
+                        toast.remove();
+                    }
+                }, 300);
+            }, duration);
+        }
+
+        // Make showToast available globally
+        window.showToast = showToast;
+    </script>
+
+    <style>
+        /* === MODERN AESTHETIC DESIGN TOKENS === */
+        :root {
+            /* New Color Palette - Coastal Fresh */
+            --color-beige: #F5DEB3;
+            --color-yellow: #F4E97F;
+            --color-cyan-light: #C7F0F8;
+            --color-turquoise: #70D6C7;
+            --color-teal: #4A8C8C;
+            
+            /* Modern Color Assignments */
+            --primary-white: #FFFFFF;
+            --background-light: #F8FAFB;
+            --background-soft: #EDF5F6;
+            --text-primary: #1A3940;
+            --text-secondary: #4A8C8C;
+            --text-muted: #7BA8A8;
+            
+            /* Modern Accent Colors */
+            --accent-primary: #4A8C8C;
+            --accent-secondary: #70D6C7;
+            --accent-success: #70D6C7;
+            --accent-warning: #F4E97F;
+            --accent-danger: #E07A5F;
+            --accent-light: #C7F0F8;
+            --accent-warm: #F5DEB3;
+            
+            /* Modern Borders & Surfaces */
+            --border-light: #D5E9EC;
+            --border-medium: #B3D9DE;
+            --surface-elevated: #FFFFFF;
+            --surface-hover: #F0FAFB;
+            
+            /* Modern Gradients */
+            --gradient-primary: linear-gradient(135deg, #4A8C8C 0%, #70D6C7 100%);
+            --gradient-secondary: linear-gradient(135deg, #70D6C7 0%, #C7F0F8 100%);
+            --gradient-warm: linear-gradient(135deg, #F5DEB3 0%, #F4E97F 50%, #C7F0F8 100%);
+            --gradient-surface: linear-gradient(135deg, #F8FAFB 0%, #EDF5F6 100%);
+            --gradient-hero: linear-gradient(135deg, #4A8C8C 0%, #70D6C7 50%, #C7F0F8 100%);
+            
+            /* Typography */
+            --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --font-weight-normal: 400;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 700;
+            
+            /* Modern Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(74, 140, 140, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(74, 140, 140, 0.1), 0 2px 4px -1px rgba(74, 140, 140, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(74, 140, 140, 0.1), 0 4px 6px -2px rgba(74, 140, 140, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(74, 140, 140, 0.1), 0 10px 10px -5px rgba(74, 140, 140, 0.04);
+        }
+        
+        /* === GLOBAL STYLING === */
+        body {
+            font-family: var(--font-primary);
+            color: var(--text-primary);
+            background-color: var(--primary-white);
+            line-height: 1.5;
+        }
+        
+        /* === MODERN NAVBAR === */
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.90) !important;
+            backdrop-filter: blur(32px) saturate(180%);
+            border-bottom: 1px solid var(--border-light);
+            box-shadow: var(--shadow-md);
+            padding: 1.25rem 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .navbar-brand {
+            font-family: var(--font-primary);
+            font-weight: var(--font-weight-bold) !important;
+            font-size: 1.75rem !important;
+            color: var(--text-primary) !important;
+            text-decoration: none;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            letter-spacing: -0.025em;
+        }
+        
+        .navbar-brand:hover {
+            transform: translateY(-2px);
+            color: var(--accent-primary) !important;
+        }
+        
+        .navbar-brand::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 2px;
+        }
+        
+        .navbar-brand:hover::after {
+            width: 100%;
+        }
+        
+        /* === MODERN SEARCH BAR === */
+        .search-bar {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.08));
+        }
+        
+        .search-bar .form-control {
+            height: 52px;
+            border: 2px solid var(--border-light);
+            border-radius: 26px;
+            padding: 0 64px 0 28px;
+            font-size: 1rem;
+            color: var(--text-primary);
+            background: var(--surface-elevated);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: var(--font-weight-medium);
+            letter-spacing: 0.01em;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .search-bar .form-control::placeholder {
+            color: var(--text-muted);
+            font-weight: var(--font-weight-normal);
+        }
+        
+        .search-bar .form-control:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1), var(--shadow-lg);
+            outline: none;
+            transform: translateY(-2px);
+            background: var(--primary-white);
+        }
+        
+        .search-bar .btn {
+            position: absolute;
+            right: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 44px;
+            width: 44px;
+            background: var(--gradient-primary);
+            border: none;
+            border-radius: 50%;
+            color: var(--primary-white);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+        
+        .search-bar .btn:hover {
+            background: linear-gradient(135deg, #3730A3 0%, #4338CA 100%);
+            transform: translateY(-50%) translateY(-2px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
+        }
+        
+        .search-bar .btn:active {
+            transform: translateY(-50%) translateY(-1px) scale(1.02);
+        }
+        
+        /* === PREMIUM USER MENU === */
+        .dropdown-menu {
+            border: 1px solid rgba(229, 231, 235, 0.5);
+            border-radius: 12px;
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 89, 179, 0.08);
+            backdrop-filter: blur(16px);
+            background: rgba(255, 255, 255, 0.98);
+            padding: 0.5rem 0;
+            margin-top: 8px;
+        }
+        
+        .dropdown-item {
+            padding: 0.75rem 1.5rem;
+            font-family: var(--font-primary);
+            font-weight: var(--font-weight-normal);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dropdown-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-blue), #0066CC);
+            transition: width 0.3s ease;
+            opacity: 0.1;
+        }
+        
+        .dropdown-item:hover::before {
+            width: 100%;
+        }
+        
+        .dropdown-item:hover {
+            background: rgba(0, 89, 179, 0.05);
+            transform: translateX(4px);
+        }
+        
+        /* Navigation link improvements */
+        .nav-link {
+            font-family: var(--font-primary) !important;
+            font-weight: var(--font-weight-medium) !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .nav-link:hover {
+            transform: translateY(-1px);
+        }
+        
+        /* === MODERN CATEGORY BAR === */
+        .category-bar {
+            background: var(--gradient-surface) !important;
+            border-bottom: 1px solid var(--border-light);
+            padding: 0;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), var(--shadow-sm);
+            position: relative;
+            z-index: 1000;
+            overflow: visible !important;
+        }
+        
+        .category-nav {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0;
+            gap: 0;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            scrollbar-width: none; /* Hide scrollbar for Firefox */
+            -ms-overflow-style: none; /* Hide scrollbar for IE/Edge */
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+            padding-left: 2rem;
+            padding-right: 2rem;
+        }
+        
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .category-nav::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .category-item {
+            position: relative;
+            flex: 0 0 auto;
+            flex-shrink: 0;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+            text-align: center;
+            min-width: fit-content;
+        }
+        
+        .category-link {
+            display: block !important;
+            padding: 1.25rem 2rem !important;
+            text-decoration: none !important;
+            color: var(--text-secondary) !important;
+            font-family: var(--font-primary);
+            font-weight: var(--font-weight-semibold) !important;
+            font-size: 0.9rem !important;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            border-radius: 0 !important;
+            white-space: nowrap !important;
+            position: relative !important;
+            letter-spacing: 0.025em;
+        }
+        
+        .category-link::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+        
+        .category-item:hover .category-link {
+            background: var(--surface-elevated) !important;
+            color: var(--accent-primary) !important;
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .category-item:hover .category-link::before {
+            width: 85%;
+        }
+        
+        /* === MODERN MEGA MENU === */
+        .mega-menu {
+            position: fixed !important;
+            top: auto !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100vw !important;
+            background: rgba(255, 255, 255, 0.98) !important;
+            backdrop-filter: blur(40px) saturate(180%) !important;
+            border: none !important;
+            border-top: 1px solid var(--border-light) !important;
+            border-bottom: 1px solid var(--border-light) !important;
+            border-radius: 0 !important;
+            box-shadow: var(--shadow-xl) !important;
+            z-index: 99999 !important;
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            transition: opacity 0.2s ease, visibility 0.2s ease !important;
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+            max-height: 80vh !important;
+        }
+        
+        /* Center mega menu content */
+        .mega-menu > div {
+            max-width: 1400px !important;
+            margin: 0 auto !important;
+        }
+        
+        .mega-menu::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+        
+        .category-item.menu-active .mega-menu {
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+        
+        /* Dynamic mega menu positioning */
+        .category-bar {
+            position: relative;
+        }
+        
+        .category-bar > .container {
+            position: relative;
+        }
+        
+        /* Override any container constraints */
+        .container, .container-fluid {
+            overflow: visible !important;
+        }
+        
+        /* Ensure mega menu is above everything */
+        .mega-menu {
+            z-index: 99999 !important;
+        }
+        
+        /* Hero/Banner should be below mega menu */
+        .hero-section, .banner, .carousel {
+            z-index: 1 !important;
+            position: relative;
+        }
+        
+        /* Mega menu content styling - enhanced */
+        .mega-menu h6 {
+            font-family: var(--font-primary);
+            font-weight: var(--font-weight-semibold) !important;
+            color: var(--text-primary) !important;
+            font-size: 1.1rem !important;
+            margin-bottom: 2rem !important;
+            text-align: center;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+        
+        .mega-menu h6::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-blue), #0066CC);
+            border-radius: 2px;
+        }
+        
+        .mega-menu a {
+            color: var(--text-primary) !important;
+            font-family: var(--font-primary);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .mega-menu a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 89, 179, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .mega-menu a:hover {
+            color: var(--accent-blue) !important;
+            transform: translateX(4px);
+        }
+        
+        .mega-menu a:hover::before {
+            left: 100%;
+        }
+        
+        @keyframes megaMenuSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* === ENHANCED RESPONSIVE DESIGN === */
+        @media (max-width: 1200px) {
+            .category-nav {
+                padding: 0 0.5rem;
+            }
+            
+            .category-link {
+                padding: 1rem 1.2rem !important;
+                font-size: 0.85rem !important;
+            }
+            
+            .mega-menu {
+                width: 85vw !important;
+            }
+            
+            .search-bar {
+                max-width: 500px;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .category-link {
+                padding: 1rem 1rem !important;
+                font-size: 0.8rem !important;
+            }
+            
+            .mega-menu {
+                width: 90vw !important;
+                border-radius: 12px !important;
+            }
+            
+            .search-bar {
+                max-width: 400px;
+            }
+            
+            .navbar-brand {
+                font-size: 1.4rem !important;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .category-bar {
+                padding: 0.5rem 0;
+            }
+            
+            .category-nav {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+            
+            .category-nav::-webkit-scrollbar {
+                display: none;
+            }
+            
+            .category-link {
+                padding: 0.8rem 1rem !important;
+                font-size: 0.8rem !important;
+            }
+            
+            .search-bar .form-control {
+                height: 44px;
+                border-radius: 22px;
+                padding-right: 50px;
+            }
+            
+            .search-bar .btn {
+                right: 4px;
+                height: 36px;
+                width: 36px;
+            }
+            
+            .mega-menu {
+                position: absolute !important;
+                top: 100% !important;
+                width: 100vw !important;
+                left: 0 !important;
+                right: 0 !important;
+                margin-left: calc(-50vw + 50%) !important;
+                border-radius: 0 !important;
+            }
+            
+            .category-nav {
+                justify-content: flex-start;
+                padding: 0 1rem;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .mega-menu > div {
+                padding: 1.5rem 1rem !important;
+            }
+        }
+        
+        /* === MICRO-INTERACTIONS === */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .search-bar .btn:focus {
+            animation: pulse 0.5s ease-in-out;
+        }
+        
+        /* Smooth scrolling for category navigation */
+        .category-nav {
+            scroll-behavior: smooth;
+        }
+        
+        /* Loading states */
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+    </style>
+    
+    <script>
+        // Calculate mega menu position dynamically
+        document.addEventListener('DOMContentLoaded', function() {
+            function updateMegaMenuPosition() {
+                const categoryBar = document.querySelector('.category-bar');
+                if (categoryBar) {
+                    const rect = categoryBar.getBoundingClientRect();
+                    const topPosition = rect.bottom;
+                    
+                    // Ensure all mega menus are properly positioned
+                    const megaMenus = document.querySelectorAll('.mega-menu');
+                    megaMenus.forEach(menu => {
+                        menu.style.top = topPosition + 'px';
+                    });
+                }
+            }
+            
+            // Update position on load and resize
+            updateMegaMenuPosition();
+            window.addEventListener('resize', updateMegaMenuPosition);
+            window.addEventListener('scroll', function() {
+                // Update on scroll to keep mega menu aligned
+                if (document.querySelector('.category-item.menu-active')) {
+                    updateMegaMenuPosition();
+                }
+            });
+            
+            // Enhanced hover handling
+            const categoryItems = document.querySelectorAll('.category-item');
+            categoryItems.forEach(item => {
+                let hoverTimeout;
+                
+                item.addEventListener('mouseenter', function() {
+                    clearTimeout(hoverTimeout);
+                    // Remove active from all items
+                    categoryItems.forEach(i => i.classList.remove('menu-active'));
+                    // Add active to this item
+                    this.classList.add('menu-active');
+                    updateMegaMenuPosition();
+                });
+                
+                item.addEventListener('mouseleave', function() {
+                    const self = this;
+                    hoverTimeout = setTimeout(() => {
+                        self.classList.remove('menu-active');
+                    }, 300);
+                });
+                
+                // Keep mega menu open when hovering over it
+                const megaMenu = item.querySelector('.mega-menu');
+                if (megaMenu) {
+                    megaMenu.addEventListener('mouseenter', function() {
+                        clearTimeout(hoverTimeout);
+                        item.classList.add('menu-active');
+                    });
+                    
+                    megaMenu.addEventListener('mouseleave', function() {
+                        item.classList.remove('menu-active');
+                    });
+                }
+            });
+        });
+        });
+    </script>
+    
+    <script>
+        // Enhanced mega menu with proper hover intent
+        $(document).ready(function() {
+            let hoverIntentTimer = null;
+            let hideTimer = null;
+            const HOVER_INTENT_DELAY = 200; // ms to wait before showing
+            const HIDE_DELAY = 300; // ms to wait before hiding
+            
+            $('.category-item').on('mouseenter', function() {
+                const $item = $(this);
+                const $menu = $item.find('.mega-menu');
+                
+                // Clear any pending hide timer
+                if (hideTimer) {
+                    clearTimeout(hideTimer);
+                    hideTimer = null;
+                }
+                
+                // Only proceed if this item has a mega menu
+                if ($menu.length === 0) return;
+                
+                // Clear any pending show timer
+                if (hoverIntentTimer) {
+                    clearTimeout(hoverIntentTimer);
+                }
+                
+                // Set hover intent timer
+                hoverIntentTimer = setTimeout(() => {
+                    // Remove active class from all items
+                    $('.category-item').removeClass('menu-active');
+                    
+                    // Add active class to current item
+                    $item.addClass('menu-active');
+                    
+                    hoverIntentTimer = null;
+                }, HOVER_INTENT_DELAY);
+            });
+            
+            $('.category-item').on('mouseleave', function() {
+                const $item = $(this);
+                
+                // Clear hover intent timer if still pending
+                if (hoverIntentTimer) {
+                    clearTimeout(hoverIntentTimer);
+                    hoverIntentTimer = null;
+                }
+                
+                // Set hide delay timer
+                hideTimer = setTimeout(() => {
+                    // Check if mouse is over the menu itself
+                    const $menu = $item.find('.mega-menu');
+                    if (!$menu.is(':hover')) {
+                        $item.removeClass('menu-active');
+                    }
+                    hideTimer = null;
+                }, HIDE_DELAY);
+            });
+            
+            // Keep menu visible when hovering over it
+            $('.mega-menu').on('mouseenter', function() {
+                if (hideTimer) {
+                    clearTimeout(hideTimer);
+                    hideTimer = null;
+                }
+            });
+            
+            // Hide menu when leaving it
+            $('.mega-menu').on('mouseleave', function() {
+                const $item = $(this).closest('.category-item');
+                
+                hideTimer = setTimeout(() => {
+                    $item.removeClass('menu-active');
+                    hideTimer = null;
+                }, HIDE_DELAY);
+            });
+            
+            // Clear timers on page unload
+            $(window).on('beforeunload', function() {
+                if (hoverIntentTimer) clearTimeout(hoverIntentTimer);
+                if (hideTimer) clearTimeout(hideTimer);
+            });
+        });
+        
+        // Category Navigation Buttons with Smooth Scroll
+        document.addEventListener('DOMContentLoaded', function() {
+            const navContainer = document.getElementById('categoryNav');
+            const leftBtn = document.getElementById('categoryNavLeft');
+            const rightBtn = document.getElementById('categoryNavRight');
+            
+            if (!navContainer || !leftBtn || !rightBtn) return;
+            
+            const scrollAmount = 300; // pixels to scroll
+            
+            // Check scroll position and update button visibility
+            function updateButtonVisibility() {
+                const scrollLeft = navContainer.scrollLeft;
+                const scrollWidth = navContainer.scrollWidth;
+                const clientWidth = navContainer.clientWidth;
+                
+                // Show/hide left button
+                if (scrollLeft > 10) {
+                    leftBtn.classList.add('visible');
+                } else {
+                    leftBtn.classList.remove('visible');
+                }
+                
+                // Show/hide right button
+                if (scrollLeft < scrollWidth - clientWidth - 10) {
+                    rightBtn.classList.add('visible');
+                } else {
+                    rightBtn.classList.remove('visible');
+                }
+            }
+            
+            // Scroll left
+            leftBtn.addEventListener('click', function() {
+                navContainer.scrollBy({
+                    left: -scrollAmount,
+                    behavior: 'smooth'
+                });
+            });
+            
+            // Scroll right
+            rightBtn.addEventListener('click', function() {
+                navContainer.scrollBy({
+                    left: scrollAmount,
+                    behavior: 'smooth'
+                });
+            });
+            
+            // Update buttons on scroll
+            navContainer.addEventListener('scroll', updateButtonVisibility);
+            
+            // Update buttons on resize
+            window.addEventListener('resize', updateButtonVisibility);
+            
+            // Initial check
+            updateButtonVisibility();
+        });
+        
+        // Global Watchlist Logic
+        $(document).on('click', '.btn-watchlist', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const btn = $(this);
+            const icon = btn.find('i');
+            const productId = btn.data('id');
+
+            btn.prop('disabled', true);
+
+            $.ajax({
+                url: '/watchlist/api/add',
+                method: 'POST',
+                data: { id: productId },
+                success: function(response) {
+                    btn.prop('disabled', false);
+                    if (response.action === 'added') {
+                        icon.removeClass('bi-heart').addClass('bi-heart-fill');
+                    } else {
+                        icon.removeClass('bi-heart-fill').addClass('bi-heart');
+                    }
+                    
+                    // Hiển thị toast notification
+                    if (response.message) {
+                        showToast(response.message, 'success');
+                    }
+                },
+                error: function(xhr) {
+                    btn.prop('disabled', false);
+                    if (xhr.status === 401) {
+                        const errorMsg = xhr.responseJSON?.message || 'Vui lòng đăng nhập để sử dụng tính năng này!';
+                        showToast(errorMsg, 'warning');
+                        setTimeout(() => {
+                            window.location.href = `/account/signin?retUrl=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+                        }, 1500);
+                    } else {
+                        const errorMsg = xhr.responseJSON?.message || 'Lỗi khi cập nhật watchlist';
+                        showToast(errorMsg, 'error');
+                    }
+                }
+            });
+        });
+    </script>
+    
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="toast-notification-container"></div>
+
+    {{#if successMessage}}
+    <script>
+        showToast('{{successMessage}}', 'success');
+    </script>
+    {{/if}}
+
+    {{#if errorMessage}}
+    <script>
+        showToast('{{errorMessage}}', 'error');
+    </script>
+    {{/if}}
+
+    {{#if success_message}}
+    <script>
+        showToast('{{success_message}}', 'success');
+    </script>
+    {{/if}}
+
+    {{#if err_message}}
+    <script>
+        showToast('{{err_message}}', 'error');
+    </script>
+    {{/if}}
+    
+    {{{_sections.js}}}
 </body>
-
 </html>

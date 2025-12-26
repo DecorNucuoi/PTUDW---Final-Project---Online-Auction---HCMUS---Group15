@@ -1,0 +1,73 @@
+<div class="card mb-4 shadow-sm">
+    <div class="card-body">
+        <div class="progress-steps">
+            <!-- Step 1: Payment -->
+            <div class="step {{#if (gte transaction.status 0)}}active{{/if}} {{#if (gte transaction.status 1)}}completed{{/if}}">
+                <div class="step-icon">
+                    {{#if (gte transaction.status 1)}}
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                    {{else}}
+                        <i class="bi bi-1-circle"></i>
+                    {{/if}}
+                </div>
+                <div class="step-text">Thanh toán</div>
+            </div>
+
+            <div class="step-line {{#if (gte transaction.status 1)}}completed{{/if}}"></div>
+
+            <!-- Step 2: Shipping -->
+            <div class="step {{#if (gte transaction.status 1)}}active{{/if}} {{#if (gte transaction.status 2)}}completed{{/if}}">
+                <div class="step-icon">
+                    {{#if (gte transaction.status 2)}}
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                    {{else}}
+                        <i class="bi bi-2-circle"></i>
+                    {{/if}}
+                </div>
+                <div class="step-text">Gửi hàng</div>
+            </div>
+
+            <div class="step-line {{#if (gte transaction.status 2)}}completed{{/if}}"></div>
+
+            <!-- Step 3: Received -->
+            <div class="step {{#if (gte transaction.status 2)}}active{{/if}} {{#if (gte transaction.status 3)}}completed{{/if}}">
+                <div class="step-icon">
+                    {{#if (gte transaction.status 3)}}
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                    {{else}}
+                        <i class="bi bi-3-circle"></i>
+                    {{/if}}
+                </div>
+                <div class="step-text">Nhận hàng</div>
+            </div>
+
+            <div class="step-line {{#if (gte transaction.status 3)}}completed{{/if}}"></div>
+
+            <!-- Step 4: Rating -->
+            <div class="step {{#if (gte transaction.status 3)}}active{{/if}} {{#if (isEqual transaction.status 4)}}completed{{/if}}">
+                <div class="step-icon">
+                    {{#if (isEqual transaction.status 4)}}
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                    {{else}}
+                        <i class="bi bi-4-circle"></i>
+                    {{/if}}
+                </div>
+                <div class="step-text">Đánh giá</div>
+            </div>
+        </div>
+
+        {{#if (isEqual transaction.status 5)}}
+        <div class="alert alert-danger mt-3 mb-0">
+            <i class="bi bi-x-circle-fill"></i> 
+            <strong>Giao dịch đã bị hủy</strong>
+        </div>
+        {{/if}}
+
+        {{#if (isEqual transaction.status 4)}}
+        <div class="alert alert-success mt-3 mb-0">
+            <i class="bi bi-check-circle-fill"></i> 
+            <strong>Giao dịch hoàn tất!</strong> Cảm ơn bạn đã sử dụng dịch vụ.
+        </div>
+        {{/if}}
+    </div>
+</div>

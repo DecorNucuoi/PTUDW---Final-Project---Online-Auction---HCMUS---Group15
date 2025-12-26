@@ -1,0 +1,177 @@
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-folder-fill"></i> Chi Tiết Danh Mục</h2>
+        <a href="/admin/categories" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Quay lại
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Category Information -->
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Thông Tin Danh Mục</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th width="40%">ID</th>
+                            <td>{{category.id}}</td>
+                        </tr>
+                        <tr>
+                            <th>Tên Danh Mục</th>
+                            <td><strong>{{category.name}}</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Danh Mục Cha</th>
+                            <td>
+                                {{#if parentCategory}}
+                                    <a href="/admin/categories/detail/{{parentCategory.id}}">
+                                        {{parentCategory.name}}
+                                    </a>
+                                {{else}}
+                                    <em>Danh mục gốc</em>
+                                {{/if}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Số Danh Mục Con</th>
+                            <td>
+                                <span class="badge bg-info">{{subcategories.length}}</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Số Sản Phẩm</th>
+                            <td>
+                                <span class="badge bg-success">{{productCount}}</span>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div class="d-flex gap-2 mt-3">
+                        <a href="/admin/categories/edit?id={{category.id}}" class="btn btn-warning">
+                            <i class="bi bi-pencil-square"></i> Chỉnh Sửa
+                        </a>
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                {{#if (or (gt productCount 0) (gt subcategories.length 0))}}disabled{{/if}}>
+                            <i class="bi bi-trash"></i> Xóa Danh Mục
+                        </button>
+                    </div>
+
+                    {{#if (or (gt productCount 0) (gt subcategories.length 0))}}
+                    <div class="alert alert-warning mt-3 mb-0">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <small>Không thể xóa danh mục có sản phẩm hoặc danh mục con.</small>
+                    </div>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+
+        <!-- Subcategories -->
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Danh Mục Con ({{subcategories.length}})</h5>
+                </div>
+                <div class="card-body">
+                    {{#if subcategories}}
+                    <div class="list-group">
+                        {{#each subcategories}}
+                        <a href="/admin/categories/detail/{{this.id}}" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span><i class="bi bi-folder"></i> {{this.name}}</span>
+                                <span class="badge bg-primary">ID: {{this.id}}</span>
+                            </div>
+                        </a>
+                        {{/each}}
+                    </div>
+                    {{else}}
+                    <p class="text-muted">Không có danh mục con.</p>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products in Category -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">Sản Phẩm Trong Danh Mục ({{productCount}})</h5>
+        </div>
+        <div class="card-body">
+            {{#if products}}
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Tên Sản Phẩm</th>
+                            <th>Giá Hiện Tại</th>
+                            <th>Trạng Thái</th>
+                            <th>Ngày Tạo</th>
+                            <th>Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each products}}
+                        <tr>
+                            <td>{{this.id}}</td>
+                            <td>
+                                <a href="/products/detail/{{this.id}}" target="_blank" class="text-decoration-none">
+                                    {{this.name}}
+                                </a>
+                            </td>
+                            <td class="text-success fw-bold">{{this.current_price}} VND</td>
+                            <td>
+                                {{#if (isEqual this.status -1)}}
+                                    <span class="badge bg-danger">Đã gỡ</span>
+                                {{else if (isEqual this.status 0)}}
+                                    <span class="badge bg-secondary">Nháp</span>
+                                {{else if (isEqual this.status 1)}}
+                                    <span class="badge bg-success">Đang đấu</span>
+                                {{else if (isEqual this.status 2)}}
+                                    <span class="badge bg-info">Kết thúc</span>
+                                {{/if}}
+                            </td>
+                            <td>{{this.created_at}}</td>
+                            <td>
+                                <a href="/admin/products/detail/{{this.id}}" class="btn btn-sm btn-info">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+            {{else}}
+            <p class="text-muted">Chưa có sản phẩm nào trong danh mục này.</p>
+            {{/if}}
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Xác Nhận Xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa danh mục <strong>{{category.name}}</strong> không?</p>
+                <p class="text-danger"><strong>Cảnh báo:</strong> Hành động này không thể hoàn tác!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <form method="POST" action="/admin/categories/delete" style="display: inline;">
+                    <input type="hidden" name="id" value="{{category.id}}">
+                    <button type="submit" class="btn btn-danger">Xóa</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

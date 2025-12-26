@@ -47,6 +47,14 @@
     User Registration
   </h5>
   <div class="card-body">
+    {{#if err_message}}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      {{err_message}}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {{/if}}
+    
     <form method="post" id ="frmSignup">
       <!-- Fullname -->
       <div class="row mb-3">
@@ -106,7 +114,7 @@
       <!-- RECAPTCHA DIV -->
       <div class="row mb-3">
          <div class="col-sm-9 offset-sm-3">
-            <div class="g-recaptcha" data-sitekey="6LdJzh0sAAAAAFx2dfkt_2c4ZwBNln2FxLq7-zzr"></div>
+            <div class="g-recaptcha" data-sitekey="6LePyjcsAAAAACM0kBMKGezEwjRIlGVyuEKnZtXL"></div>
          </div>
       </div>
 

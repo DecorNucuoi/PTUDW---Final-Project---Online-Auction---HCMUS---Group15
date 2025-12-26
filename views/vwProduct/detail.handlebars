@@ -1,121 +1,1170 @@
 {{#section 'css'}}
 <style>
-    .gallery-thumb { cursor: pointer; opacity: 0.6; transition: 0.3s; }
-    .gallery-thumb:hover, .gallery-thumb.active { opacity: 1; border: 2px solid #0d6efd; }
-    .big-img { height: 400px; object-fit: contain; background: #f8f9fa; }
+    .restricted-view-container {
+        max-width: 800px;
+        margin: 3rem auto;
+        padding: 0 1rem;
+    }
+    
+    .restricted-card {
+        background: var(--bg-white);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+        border: 2px solid var(--border-light);
+    }
+    
+    .restricted-icon {
+        font-size: 4rem;
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+    }
+    
+    .restricted-title {
+        color: var(--text-color);
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+    
+    .restricted-message {
+        color: var(--text-muted);
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .product-preview-card {
+        background: var(--bg-gray);
+        border-radius: var(--radius-md);
+        padding: 2rem;
+        margin: 2rem 0;
+    }
+    
+    .preview-image {
+        max-height: 300px;
+        object-fit: cover;
+        border-radius: var(--radius-sm);
+        margin-bottom: 1.5rem;
+    }
+    
+    .product-detail-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+    
+    .product-gallery {
+        background: var(--bg-white);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-light);
+        height: fit-content;
+    }
+    
+    .main-image-container {
+        position: relative;
+        background: linear-gradient(135deg, var(--bg-gray), var(--bg-white));
+        border-radius: var(--radius-md);
+        padding: 1rem;
+        border: 2px solid var(--border-light);
+    }
+    
+    .main-image {
+        width: 100%;
+        height: 400px;
+        object-fit: contain;
+        border-radius: var(--radius-sm);
+    }
+    
+    .gallery-thumbs {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: center;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .gallery-thumb {
+        width: 70px;
+        height: 70px;
+        object-fit: cover;
+        border-radius: var(--radius-sm);
+        border: 2px solid var(--border-light);
+        cursor: pointer;
+        opacity: 0.7;
+        transition: var(--transition);
+    }
+    
+    .gallery-thumb:hover,
+    .gallery-thumb.active {
+        opacity: 1;
+        border-color: var(--primary-color);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .product-info {
+        background: var(--bg-white);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-light);
+    }
+    
+    .product-title {
+        color: var(--text-color);
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+    
+    .product-meta {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-light);
+    }
+    
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+    
+    .pricing-section {
+        background: linear-gradient(135deg, #fef7f0, #fff);
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+    
+    .current-price {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--danger-color);
+        margin: 0;
+        text-shadow: 0 1px 2px rgba(220, 38, 38, 0.1);
+    }
+    
+    .price-details {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 1rem;
+        align-items: center;
+    }
+    
+    .price-item {
+        background: var(--bg-white);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-full);
+        border: 1px solid var(--border-light);
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+    
+    .buy-now-badge {
+        background: linear-gradient(135deg, var(--success-color), #059669);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-full);
+        font-weight: 600;
+        font-size: 0.9rem;
+        border: none;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .watchlist-btn {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: var(--bg-white);
+        border: 2px solid var(--border-color);
+        color: var(--text-muted);
+        border-radius: var(--radius-full);
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        transition: var(--transition);
+    }
+    
+    .watchlist-btn:hover {
+        background: var(--danger-color);
+        border-color: var(--danger-color);
+        color: white;
+        transform: translateY(-1px);
+    }
+    
+    /* User Info Cards */
+    .user-info-card {
+        background: var(--bg-gray);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-md);
+        padding: 1rem;
+        height: 100%;
+    }
+    
+    .user-info-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .user-info-content h6 {
+        color: var(--text-color);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .rating-display {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .rating-score {
+        background: var(--primary-color);
+        color: white;
+        padding: 0.2rem 0.5rem;
+        border-radius: var(--radius-sm);
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .rating-stars {
+        color: #fbbf24;
+        font-size: 0.8rem;
+    }
+    
+    /* Countdown Timer */
+    .countdown-section {
+        background: linear-gradient(135deg, #fef3c7, #fef7cd);
+        border: 2px solid #f59e0b;
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .countdown-header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        color: #92400e;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .countdown-timer {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #92400e;
+        margin-bottom: 0.5rem;
+    }
+    
+    .countdown-end-time {
+        color: #92400e;
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+    
+    /* Custom Alerts */
+    .custom-alert {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1rem;
+        border-radius: var(--radius-md);
+        margin-bottom: 1rem;
+        position: relative;
+    }
+    
+    .alert-error {
+        background: linear-gradient(135deg, #fef2f2, #fee2e2);
+        border: 1px solid #fca5a5;
+    }
+    
+    .alert-error i {
+        color: var(--danger-color);
+        font-size: 1.2rem;
+    }
+    
+    .alert-success {
+        background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+        border: 1px solid #86efac;
+    }
+    
+    .alert-success i {
+        color: var(--success-color);
+        font-size: 1.2rem;
+    }
+    
+    .alert-close {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 0.25rem;
+        border-radius: var(--radius-sm);
+    }
+    
+    .alert-close:hover {
+        background: rgba(0,0,0,0.1);
+    }
+    
+    /* Bidding Section */
+    .bidding-section {
+        background: linear-gradient(135deg, #eff6ff, #dbeafe);
+        border: 2px solid var(--primary-color);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .bidding-input-group {
+        text-align: center;
+    }
+    
+    .bid-label {
+        display: block;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+    }
+    
+    .bid-input-container {
+        display: flex;
+        align-items: center;
+        background: var(--bg-white);
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        margin-bottom: 0.75rem;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .currency-symbol {
+        padding: 0.75rem 1rem;
+        background: var(--bg-gray);
+        border-right: 1px solid var(--border-color);
+        font-weight: 600;
+        color: var(--text-color);
+    }
+    
+    .bid-input {
+        flex: 1;
+        border: none;
+        padding: 0.75rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--danger-color);
+        text-align: center;
+    }
+    
+    .bid-input:focus {
+        outline: none;
+    }
+
+    .bid-controls {
+        display: flex;
+        flex-direction: column;
+        border-left: 1px solid var(--border-color);
+        border-right: 1px solid var(--border-color);
+    }
+
+    .btn-increment, .btn-decrement {
+        background: var(--bg-gray);
+        border: none;
+        padding: 0.25rem 0.75rem;
+        cursor: pointer;
+        transition: var(--transition);
+        color: var(--text-color);
+        font-size: 0.9rem;
+    }
+
+    .btn-increment {
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .btn-increment:hover {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-decrement:hover {
+        background: var(--danger-color);
+        color: white;
+    }
+    
+    .bid-btn {
+        background: linear-gradient(135deg, var(--primary-color), #1d4ed8);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+    
+    .bid-btn:hover {
+        background: linear-gradient(135deg, #1d4ed8, #1e40af);
+        transform: translateX(2px);
+    }
+    
+    .bid-hint {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+    }
+
+    /* Auction Ended Alert */
+    .auction-ended-alert {
+        background: linear-gradient(135deg, #fee2e2, #fef3c7);
+        border: 2px solid #fbbf24;
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        gap: 1.5rem;
+        align-items: flex-start;
+        box-shadow: var(--shadow-md);
+    }
+
+    .auction-ended-alert .alert-icon {
+        font-size: 3rem;
+        color: #f59e0b;
+        flex-shrink: 0;
+    }
+
+    .auction-ended-alert .alert-content {
+        flex: 1;
+    }
+
+    .auction-ended-alert h5 {
+        color: #92400e;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 1.25rem;
+    }
+
+    .auction-ended-alert p {
+        color: #78350f;
+        margin-bottom: 0.5rem;
+    }
+
+    .auction-ended-alert .winner-info {
+        background: rgba(255, 255, 255, 0.7);
+        padding: 0.75rem 1rem;
+        border-radius: var(--radius-md);
+        margin-top: 1rem;
+        font-weight: 600;
+        color: #1f2937;
+    }
+    
+    /* Seller Info Alert */
+    .seller-info-alert {
+        background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+        border: 2px solid #3b82f6;
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        gap: 1.5rem;
+        align-items: flex-start;
+        box-shadow: var(--shadow-md);
+    }
+
+    .seller-info-alert .alert-icon {
+        font-size: 3rem;
+        color: #2563eb;
+        flex-shrink: 0;
+    }
+
+    .seller-info-alert .alert-content {
+        flex: 1;
+    }
+
+    .seller-info-alert h5 {
+        color: #1e3a8a;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 1.25rem;
+    }
+
+    .seller-info-alert p {
+        color: #1e40af;
+        margin-bottom: 0.5rem;
+    }
+
+    .seller-info-alert .current-status {
+        background: rgba(255, 255, 255, 0.7);
+        padding: 0.75rem 1rem;
+        border-radius: var(--radius-md);
+        margin-top: 1rem;
+        font-weight: 600;
+        color: #1f2937;
+    }
+    
+    /* Login Prompt */
+    .login-prompt {
+        background: linear-gradient(135deg, var(--bg-gray), var(--bg-white));
+        border: 2px dashed var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 3rem 2rem;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .login-prompt-content i {
+        font-size: 3rem;
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+    }
+    
+    .login-prompt-content h5 {
+        color: var(--text-color);
+        margin-bottom: 0.75rem;
+    }
+    
+    .login-prompt-content p {
+        color: var(--text-muted);
+        margin-bottom: 1.5rem;
+    }
+    
+    .login-btn {
+        background: linear-gradient(135deg, var(--primary-color), #1d4ed8);
+        color: white;
+        text-decoration: none;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        transition: var(--transition);
+        display: inline-block;
+    }
+    
+    .login-btn:hover {
+        background: linear-gradient(135deg, #1d4ed8, #1e40af);
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    /* Product Sections */
+    .product-section {
+        background: var(--bg-white);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-lg);
+        margin-bottom: 2rem;
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .section-header {
+        background: linear-gradient(135deg, var(--bg-gray), #f8fafc);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid var(--border-light);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .section-header h4 {
+        margin: 0;
+        color: var(--text-color);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+    }
+    
+    .bid-count {
+        background: var(--primary-color);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .section-content {
+        padding: 2rem;
+    }
+    
+    .product-description {
+        line-height: 1.7;
+        color: var(--text-color);
+    }
+    
+    .product-description h1,
+    .product-description h2,
+    .product-description h3,
+    .product-description h4,
+    .product-description h5,
+    .product-description h6 {
+        color: var(--text-color);
+        margin: 1.5rem 0 1rem;
+    }
+    
+    .product-description p {
+        margin-bottom: 1rem;
+    }
+    
+    .product-description img {
+        max-width: 100%;
+        height: auto;
+        border-radius: var(--radius-md);
+        margin: 1rem 0;
+    }
+    
+    /* Bid History Table */
+    .bid-history-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+    
+    .bid-history-table th,
+    .bid-history-table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border-light);
+    }
+    
+    .bid-history-table th {
+        background: var(--bg-gray);
+        font-weight: 600;
+        color: var(--text-color);
+        font-size: 0.9rem;
+    }
+    
+    .bid-history-table tr:hover {
+        background: var(--bg-gray);
+    }
+    
+    .bid-user {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-color);
+    }
+    
+    .bid-price {
+        font-weight: 600;
+        color: var(--success-color);
+        font-size: 1.1rem;
+    }
+    
+    .bid-time {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+    
+    .kick-btn {
+        background: linear-gradient(135deg, var(--danger-color), #dc2626);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-sm);
+        font-size: 0.8rem;
+        font-weight: 500;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+    
+    .kick-btn:hover {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .kick-btn.disabled {
+        background: #6c757d;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .kick-btn.disabled:hover {
+        transform: none;
+    }
+
+    .banned-bid {
+        background-color: #fff3cd !important;
+        opacity: 0.7;
+    }
+
+    .winning-bid {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%) !important;
+        border-left: 4px solid #28a745 !important;
+        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.15);
+    }
+
+    .winning-bid .bid-time::before {
+        content: '🏆 ';
+        font-size: 1.2rem;
+        margin-right: 0.5rem;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+    }
+
+    .winning-bid .bid-price {
+        color: #28a745;
+        font-weight: 700;
+        font-size: 1.2rem;
+    }
+
+    .winning-bid:hover {
+        background: linear-gradient(135deg, #c3e6cb 0%, #b1dfbb 100%) !important;
+    }
+
+    .rating-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.9rem;
+        color: #495057;
+    }
+    
+    .no-bids {
+        text-align: center;
+        color: var(--text-muted);
+        padding: 3rem;
+        font-style: italic;
+    }
+    
+    .no-bids i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        display: block;
+        opacity: 0.5;
+    }
+    
+    /* Related Products */
+    .related-product-card {
+        background: var(--bg-white);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        transition: var(--transition);
+        height: 100%;
+    }
+    
+    .related-product-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-color);
+    }
+    
+    .product-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        height: 100%;
+    }
+    
+    .product-link:hover {
+        color: inherit;
+        text-decoration: none;
+    }
+    
+    .related-image {
+        height: 140px;
+        overflow: hidden;
+        background: var(--bg-gray);
+    }
+    
+    .related-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: var(--transition);
+    }
+    
+    .related-product-card:hover .related-image img {
+        transform: scale(1.05);
+    }
+    
+    .related-info {
+        padding: 1rem;
+    }
+    
+    .related-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.3;
+    }
+    
+    .related-price {
+        color: var(--danger-color);
+        font-weight: 700;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .related-meta {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+    
+    .time-left {
+        background: var(--bg-gray);
+        padding: 0.2rem 0.5rem;
+        border-radius: var(--radius-sm);
+        font-weight: 500;
+    }
+    
+    /* Comments Section */
+    .comments-list {
+        space-y: 1.5rem;
+    }
+    
+    .comment-item {
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid var(--border-light);
+        margin-bottom: 1.5rem;
+    }
+    
+    .comment-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    
+    .comment-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+    }
+    
+    .comment-author {
+        color: var(--text-color);
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .comment-date {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+    }
+    
+    .comment-content {
+        color: var(--text-color);
+        line-height: 1.6;
+        margin: 0;
+    }
 </style>
 {{/section}}
 
-<div class="card mt-4 shadow-sm">
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-5">
-                <div class="text-center mb-3">
-                    <img src="{{images.[0].src}}" id="mainImage" class="img-fluid rounded big-img" alt="{{product.name}}">
+{{!-- Check if product has ended (status = 2) and user is not buyer/seller --}}
+{{#if (isEqual product.status 2)}}
+    {{#if (or (isEqual product.winner_id authUser.id) (isEqual product.seller_id authUser.id))}}
+        {{!-- Buyer or Seller → Redirect to transaction view --}}
+        <script>
+            window.location.href = '/transaction/{{product.id}}';
+        </script>
+    {{else}}
+        {{!-- Other users → Show restricted info --}}
+        <div class="restricted-view-container">
+            <div class="restricted-card">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-lock restricted-icon"></i>
+                    <h1 class="restricted-title">Sản phẩm đã kết thúc</h1>
+                    <p class="restricted-message">Phiên đấu giá cho sản phẩm này đã kết thúc.</p>
+                    
+                    {{!-- Basic product info --}}
+                    <div class="product-preview-card">
+                        <img src="{{images.[0].src}}" class="img-fluid preview-image" alt="{{product.name}}">
+                        <h3 class="mb-3">{{product.name}}</h3>
+                        <p class="text-success fs-4 mb-2">
+                            <i class="bi bi-trophy-fill"></i>
+                            Giá cuối: {{format_currency product.current_price}}
+                        </p>
+                        <p class="text-muted mb-2">
+                            <i class="bi bi-calendar-check"></i>
+                            Kết thúc: {{format_date product.end_time}}
+                        </p>
+                        <p class="text-muted mb-0">
+                            <i class="bi bi-tag"></i>
+                            Danh mục: {{product.category_name}}
+                        </p>
+                    </div>
+                    
+                    <a href="/" class="btn btn-primary btn-lg">
+                        <i class="bi bi-house"></i> Về trang chủ
+                    </a>
+                    <a href="/products?cat={{product.category_id}}" class="btn btn-outline-secondary btn-lg ms-2">
+                        <i class="bi bi-search"></i> Xem sản phẩm tương tự
+                    </a>
                 </div>
-                <div class="d-flex justify-content-center gap-2">
+            </div>
+        </div>
+        
+        {{!-- Stop rendering rest of page --}}
+        <script>
+            // Prevent any further content from loading
+            document.addEventListener('DOMContentLoaded', function() {
+                const mainContent = document.querySelector('.product-detail-container');
+                if (mainContent) mainContent.remove();
+            });
+        </script>
+    {{/if}}
+{{/if}}
+
+{{!-- Normal product detail page (only show if not ended or user is participant) --}}
+{{#unless (and (isEqual product.status 2) (not (or (isEqual product.winner_id authUser.id) (isEqual product.seller_id authUser.id))))}}
+<div class="product-detail-container">
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="product-gallery">
+                <div class="main-image-container">
+                    <img src="{{images.[0].src}}" id="mainImage" class="main-image" alt="{{product.name}}">
+                </div>
+                <div class="gallery-thumbs">
                     {{#each images}}
                     <img src="{{src}}" 
-                         class="gallery-thumb rounded {{#if active}}active{{/if}}" 
-                         width="70" height="70" 
-                         onclick="changeImage(this, '{{src}}')">
+                         class="gallery-thumb {{#if active}}active{{/if}}" 
+                         onclick="changeImage(this, '{{src}}')"
+                         alt="Product image">
                     {{/each}}
                 </div>
             </div>
+        </div>
 
-            <div class="col-md-7">
-                <h3 class="fw-bold">{{product.name}}</h3>
-                <div class="text-muted mb-3">
-                    Ngày đăng: {{product.created_at}}
+        <div class="col-lg-7">
+            <div class="product-info">
+                <h1 class="product-title">{{product.name}}</h1>
+                
+                <div class="product-meta">
+                    <div class="meta-item">
+                        <i class="bi bi-calendar"></i>
+                        <span>Listed: {{product.created_at}}</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="bi bi-eye"></i>
+                        <span>{{product.views}} views</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="bi bi-tag"></i>
+                        <span>{{product.category_name}}</span>
+                    </div>
                 </div>
 
-                <div class="card bg-light border-0 mb-4">
-                    <div class="card-body position-relative">
-                        
-                        <div>
-                            <h2 class="text-danger fw-bold mb-0">{{format_currency product.current_price}}</h2>
-                            <small class="text-muted">Giá khởi điểm: {{format_currency product.start_price}}</small>
-                            
+                <div class="pricing-section">
+                    <button class="watchlist-btn btn" data-id="{{product.id}}">
+                        <i class="bi bi-heart"></i> Watch
+                    </button>
+                    
+                    <div>
+                        <h2 class="current-price">{{format_currency product.current_price}}</h2>
+                        <div class="price-details">
+                            <span class="price-item">Starting: {{format_currency product.start_price}}</span>
+                            <span class="price-item">Increment: {{format_currency product.step_price}}</span>
                             {{#if product.buy_now_price}}
-                            <div class="mt-1">
-                                <span class="badge bg-success">Mua ngay: {{format_currency product.buy_now_price}}</span>
-                            </div>
+                            <span class="buy-now-badge">Buy Now: {{format_currency product.buy_now_price}}</span>
                             {{/if}}
                         </div>
-
-                        <button class="btn btn-outline-danger btn-watchlist position-absolute top-50 end-0 translate-middle-y me-3" 
-                                data-id="{{product.id}}">
-                            <i class="bi bi-heart"></i> Yêu thích
-                        </button>
+                    </div>
 
                     </div>
                 </div>
 
-
-                <div class="row mb-4">
-                    <div class="col-6">
-                        <strong><i class="bi bi-shop"></i> Người bán:</strong>
-                        <p class="mb-0">{{product.seller_masked}}</p>
-                        <small class="text-muted">Điểm đánh giá: {{product.seller_point}}</small>
+                <!-- User Info Section -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="user-info-card">
+                            <div class="user-info-header">
+                                <i class="bi bi-shop"></i>
+                                <span>Seller</span>
+                            </div>
+                            <div class="user-info-content">
+                                <h6>{{product.seller_masked}}</h6>
+                                <div class="rating-display">
+                                    {{#if product.seller_point}}
+                                        <span class="rating-score">{{product.seller_point}}%</span>
+                                        <small class="text-muted">positive</small>
+                                    {{else}}
+                                        <span class="text-muted">No rating</span>
+                                    {{/if}}
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-6">
-                        <strong><i class="bi bi-trophy"></i> Bidder cao nhất:</strong>
-                        <p class="mb-0">{{product.winner_masked}}</p>
-                        <small class="text-muted">Điểm đánh giá: {{product.winner_point}}</small>
+                    <div class="col-md-6">
+                        <div class="user-info-card">
+                            <div class="user-info-header">
+                                <i class="bi bi-trophy"></i>
+                                <span>Leading Bidder</span>
+                            </div>
+                            <div class="user-info-content">
+                                <h6>{{product.winner_masked}}</h6>
+                                <div class="rating-display">
+                                    {{#if product.winner_point}}
+                                        <span class="rating-score">{{product.winner_point}}%</span>
+                                        <small class="text-muted">positive</small>
+                                    {{else}}
+                                        <span class="text-muted">No rating</span>
+                                    {{/if}}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="alert alert-warning d-flex align-items-center" role="alert">
-                    <i class="bi bi-clock-history fs-4 me-2"></i>
-                    <div>
-                        Thời gian còn lại:<br>
-                        <strong>{{format_remainingTime product.end_time}}</strong>
-                        <br>
-                        <small class="text-muted">(Kết thúc: {{product.end_time}})</small>
+                <!-- Countdown Timer -->
+                <div class="countdown-section">
+                    <div class="countdown-header">
+                        <i class="bi bi-clock"></i>
+                        <span>Time Remaining</span>
+                    </div>
+                    <div class="countdown-timer">
+                        {{format_remainingTime product.end_time}}
+                    </div>
+                    <div class="countdown-end-time">
+                        Ends: {{product.end_time}}
                     </div>
                 </div>
 
+                <!-- Bidding Form -->
                 {{#if isAuthenticated}}
-                {{#if err_message}}
-                    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i> 
-                        <strong>Không thể ra giá:</strong> {{err_message}}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                {{#if (isEqual product.seller_id authUser.id)}}
+                <!-- Seller viewing own product -->
+                {{#if isExpired}}
+                <div class="auction-ended-alert">
+                    <div class="alert-icon">
+                        <i class="bi bi-clock-history"></i>
                     </div>
+                    <div class="alert-content">
+                        <h5>Đấu giá đã kết thúc</h5>
+                        <p>Phiên đấu giá cho sản phẩm của bạn đã hết hạn.</p>
+                        {{#if product.winner_id}}
+                        <p class="winner-info">
+                            <i class="bi bi-trophy-fill text-warning"></i>
+                            Người thắng: <strong>{{product.winner_masked}}</strong> 
+                            với giá <strong>{{format_currency product.current_price}}</strong>
+                        </p>
+                        <p class="text-muted mt-2">Vui lòng liên hệ với người thắng để hoàn tất giao dịch.</p>
+                        {{else}}
+                        <p class="text-muted">Không có người đặt giá cho sản phẩm này.</p>
+                        {{/if}}
+                    </div>
+                </div>
+                {{else}}
+                <div class="seller-info-alert">
+                    <div class="alert-icon">
+                        <i class="bi bi-shop"></i>
+                    </div>
+                    <div class="alert-content">
+                        <h5>Đây là sản phẩm của bạn</h5>
+                        <p>Bạn không thể đấu giá sản phẩm của chính mình.</p>
+                        <p class="current-status">
+                            <strong>Giá hiện tại:</strong> {{format_currency product.current_price}}
+                            {{#if product.winner_id}}
+                            <br><strong>Người đang dẫn đầu:</strong> {{product.winner_masked}}
+                            {{/if}}
+                        </p>
+                        <p class="text-muted">
+                            <i class="bi bi-clock"></i> Thời gian còn lại: {{format_remainingTime product.end_time}}
+                        </p>
+                    </div>
+                </div>
                 {{/if}}
-
-                {{#if success_message}}
-                    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-                        <i class="bi bi-check-circle-fill me-2"></i> 
-                        {{success_message}}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                {{else}}
+                <!-- Regular bidder or guest -->
+                {{#if isExpired}}
+                <!-- Auction Ended Alert -->
+                <div class="auction-ended-alert">
+                    <div class="alert-icon">
+                        <i class="bi bi-clock-history"></i>
                     </div>
+                    <div class="alert-content">
+                        <h5>Đấu giá đã kết thúc</h5>
+                        <p>Phiên đấu giá này đã hết hạn. Bạn không thể ra giá thêm.</p>
+                        {{#if product.winner_id}}
+                        <p class="winner-info">
+                            <i class="bi bi-trophy-fill text-warning"></i>
+                            Người thắng: <strong>{{product.winner_masked}}</strong> 
+                            với giá <strong>{{format_currency product.current_price}}</strong>
+                        </p>
+                        {{else}}
+                        <p class="text-muted">Không có người đặt giá cho sản phẩm này.</p>
+                        {{/if}}
+                    </div>
+                </div>
+                {{else}}
+                <div class="bidding-section">
+                    <form method="post" action="/products/bid" id="frmBid">
+                        <input type="hidden" name="id" value="{{product.id}}">
+                        
+                        <div class="bidding-input-group">
+                            <label class="bid-label">Your Bid</label>
+                            <div class="bid-input-container">
+                                <span class="currency-symbol">$</span>
+                                <input type="text" class="bid-input" name="price" 
+                                    value="{{nextBidPrice}}" 
+                                    data-min="{{nextBidPrice}}"
+                                    data-step="{{product.step_price}}"
+                                    id="bidPriceInput"
+                                    required>
+                                <div class="bid-controls">
+                                    <button type="button" class="btn-increment" onclick="incrementBid()" title="Tăng giá">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                    <button type="button" class="btn-decrement" onclick="decrementBid()" title="Giảm giá">
+                                        <i class="bi bi-dash"></i>
+                                    </button>
+                                </div>
+                                <button type="button" class="bid-btn" onclick="confirmBid()">
+                                    <i class="bi bi-hammer me-2"></i>Place Bid
+                                </button>
+                            </div>
+                            <div class="bid-hint">
+                                Minimum bid: {{format_currency nextBidPrice}}
+                            </div>
+                        </div>
+                    </form>
+                </div>
                 {{/if}}
-
-                <form method="post" action="/products/bid" class="d-flex gap-2 mt-3" id="frmBid">
-                    <input type="hidden" name="id" value="{{product.id}}">
-                    
-                    <div class="input-group">
-                        <span class="input-group-text">₫</span>
-                        <input type="number" class="form-control fw-bold text-danger" name="price" 
-                            value="{{nextBidPrice}}" 
-                            min="{{nextBidPrice}}"
-                            step="{{product.step_price}}"
-                            id="bidPriceInput"
-                            required>
-                        <button type="button" class="btn btn-primary px-4" onclick="confirmBid()">
-                            <i class="bi bi-hammer"></i> Ra giá
-                        </button>
-                    </div>
-                    <div class="form-text">
-                        * Giá đề nghị tối thiểu: {{format_currency nextBidPrice}}
-                    </div>
-                </form>
+                {{/if}}
             {{else}}
-                <div class="d-grid mt-3">
-                    <a href="/account/signin?retUrl=/products/detail/{{product.id}}" class="btn btn-outline-primary">
-                        Đăng nhập để đấu giá
-                    </a>
+                <div class="login-prompt">
+                    <div class="login-prompt-content">
+                        <i class="bi bi-person-plus"></i>
+                        <h5>Join to Start Bidding</h5>
+                        <p>Sign in to place bids and participate in auctions</p>
+                        <a href="/account/signin?retUrl=/products/detail/{{product.id}}" class="login-btn">
+                            Sign In to Bid
+                        </a>
+                    </div>
+                </div>
                 </div>
             {{/if}}
             </div>
@@ -123,68 +1172,210 @@
     </div>
 </div>
 
-<div class="card mt-4 shadow-sm">
-    <div class="card-header fw-bold bg-white">
-        <i class="bi bi-file-text"></i> Mô tả chi tiết
+<!-- Product Description -->
+<div class="product-section">
+    <div class="section-header">
+        <h4><i class="bi bi-file-earmark-text me-2"></i>Product Description</h4>
+        {{#if (and isAuthenticated (isEqual product.seller_id authUser.id))}}
+            {{#if (isEqual product.status 1)}}
+            <a href="/products/edit/{{product.id}}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-pencil-square"></i> Bổ sung mô tả
+            </a>
+            {{else}}
+            <button class="btn btn-sm btn-secondary" disabled title="Đấu giá đã kết thúc">
+                <i class="bi bi-pencil-square"></i> Bổ sung mô tả
+            </button>
+            {{/if}}
+        {{/if}}
     </div>
-    <div class="card-body">
-        {{{product.description}}}
+    <div class="section-content">
+        <div class="product-description">
+            {{{product.description}}}
+        </div>
     </div>
 </div>
 
-<div class="card mt-4 shadow-sm">
-    <div class="card-header fw-bold bg-white">
-        <i class="bi bi-clock-history"></i> Lịch sử đấu giá
-    </div>
-    <div class="card-body">
+<!-- Bidding History -->
+<div class="product-section">
+    <div class="section-header">
+        <h4><i class="bi bi-clock-history me-2"></i>Bidding History</h4>
         {{#if bidHistory}}
-            <div class="table-responsive">
-                <table class="table table-hover table-bordered mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th scope="col">Thời điểm</th>
-                            <th scope="col">Người mua</th>
-                            <th scope="col">Giá</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {{#each bidHistory}}
-                        <tr>
-                            <td>{{time_str}}</td>
-                            
-                            <td>
-                                <i class="bi bi-person-fill text-muted"></i> 
-                                {{bidder_masked}}
-                            </td>
-                            
-                            <td class="fw-bold text-success">
-                                {{format_currency price}}
-                            </td>
+        <span class="bid-count">{{bidHistory.length}} bids</span>
+        {{/if}}
+    </div>
+    <div class="section-content">
+        {{#if bidHistory}}
+            <table class="bid-history-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Bidder</th>
+                        <th>Rating</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        {{#if (isEqual product.seller_id authUser.id)}}
+                        <th>Actions</th>
+                        {{/if}}
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each bidHistory}}
+                    <tr class="{{#if is_banned}}banned-bid{{else}}{{#if (isEqual price ../product.current_price)}}winning-bid{{/if}}{{/if}}">
+                        <td class="bid-time">{{time_str}}</td>
+                        
+                        <td>
+                            <div class="bid-user">
+                                <i class="bi bi-person-circle"></i>
+                                <span>{{bidder_masked}}</span>
+                            </div>
+                        </td>
 
-                            {{#if (isEqual ../product.seller_id ../authUser.id)}}
-                                <td class="text-end">
+                        <td>
+                            {{#if rating_count}}
+                                <span class="rating-badge" title="{{rating_count}} reviews">
+                                    <i class="bi bi-hand-thumbs-up-fill text-success"></i>
+                                    {{calculate_rating_percentage rating_score rating_count}}%
+                                </span>
+                            {{else}}
+                                <span class="text-muted">No rating</span>
+                            {{/if}}
+                        </td>
+                        
+                        <td class="bid-price">
+                            {{format_currency price}}
+                        </td>
+
+                        <td>
+                            {{#if is_banned}}
+                                <span class="badge bg-danger">
+                                    <i class="bi bi-slash-circle"></i> Rejected
+                                </span>
+                            {{else}}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle"></i> Active
+                                </span>
+                            {{/if}}
+                        </td>
+
+                        {{#if (isEqual ../product.seller_id ../authUser.id)}}
+                        <td>
+                            {{#if is_banned}}
+                                <button class="kick-btn disabled" disabled title="Already banned">
+                                    <i class="bi bi-x-circle me-1"></i>Rejected
+                                </button>
+                            {{else}}
+                                {{#if (isEqual ../product.status 2)}}
+                                    <button class="kick-btn disabled" disabled title="Auction ended - cannot reject">
+                                        <i class="bi bi-x-circle me-1"></i>Reject
+                                    </button>
+                                {{else}}
                                     <form method="post" action="/products/kick" class="d-inline">
                                         <input type="hidden" name="proId" value="{{../product.id}}">
                                         <input type="hidden" name="bidderId" value="{{bidder_id}}">
                                         
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" 
-                                                onclick="return confirm('Bạn có chắc muốn từ chối và cấm người này đấu giá không?');"
-                                                title="Từ chối lượt đấu giá này">
-                                            <i class="bi bi-slash-circle"></i> Từ chối
+                                        <button type="submit" class="kick-btn" 
+                                                onclick="return confirm('Bạn có chắc muốn cấm người dùng này đấu giá?');"
+                                                title="Ban this bidder">
+                                            <i class="bi bi-x-circle me-1"></i>Reject
                                         </button>
                                     </form>
-                                </td>
+                                {{/if}}
                             {{/if}}
-                        </tr>
-                        {{/each}}
-                    </tbody>
-                </table>
-            </div>
+                        </td>
+                        {{/if}}
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
         {{else}}
             <p class="text-muted text-center mb-0">Chưa có lượt ra giá nào.</p>
         {{/if}}
     </div>
 </div>
+
+<!-- Banned Bidders Section (Only for Seller and Active Auction) -->
+{{#if (and isSeller (isEqual product.status 1))}}
+<div class="product-section mt-4">
+    <div class="section-header">
+        <h4><i class="bi bi-shield-x me-2"></i>Banned Bidders</h4>
+        <span class="bid-count">{{bannedBidders.length}} banned</span>
+    </div>
+    <div class="section-content">
+        <!-- Form to add new banned bidder -->
+        <div class="card mb-3 border-warning">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-plus-circle me-2"></i>Ban người dùng mới</h6>
+                <form method="post" action="/products/ban-user" class="row g-2">
+                    <input type="hidden" name="proId" value="{{product.id}}">
+                    <div class="col-md-9">
+                        <input type="email" class="form-control" name="userEmail" 
+                               placeholder="Nhập email người dùng cần cấm..." required>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-warning w-100" 
+                                onclick="return confirm('Bạn có chắc muốn cấm người dùng này?');">
+                            <i class="bi bi-ban me-1"></i>Ban User
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- List of banned bidders -->
+        {{#if bannedBidders.length}}
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Rating</th>
+                        <th>Banned At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each bannedBidders}}
+                    <tr>
+                        <td>
+                            <i class="bi bi-person-fill-slash text-danger me-2"></i>
+                            <strong>{{full_name}}</strong>
+                        </td>
+                        <td>{{email}}</td>
+                        <td>
+                            {{#if rating_count}}
+                                <span class="rating-badge">
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                    {{rating_score}} ({{rating_count}})
+                                </span>
+                            {{else}}
+                                <span class="text-muted">No rating</span>
+                            {{/if}}
+                        </td>
+                        <td class="text-muted small">
+                            {{banned_at}}
+                        </td>
+                        <td>
+                            <form method="post" action="/products/unban" class="d-inline">
+                                <input type="hidden" name="proId" value="{{../product.id}}">
+                                <input type="hidden" name="userId" value="{{id}}">
+                                
+                                <button type="submit" class="btn btn-sm btn-success" 
+                                        onclick="return confirm('Bạn có chắc muốn gỡ bỏ lệnh cấm cho {{full_name}}?');"
+                                        title="Unban this user">
+                                    <i class="bi bi-check-circle me-1"></i>Unban
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        {{else}}
+            <p class="text-muted text-center mb-0">Chưa có người dùng bị cấm.</p>
+        {{/if}}
+    </div>
+</div>
+{{/if}}
 
 <div class="card mt-4 shadow-sm">
     <div class="card-header fw-bold bg-white">
@@ -192,18 +1383,20 @@
     </div>
     <div class="card-body">
         {{#if isAuthenticated}}
+        {{#unless (isEqual product.seller_id authUser.id)}}
         <form class="mb-4" method="post" action="/products/question">
             <input type="hidden" name="proId" value="{{product.id}}">
             <div class="input-group">
-                <input type="text" class="form-control" name="question" placeholder="Đặt câu hỏi cho người bán..." required>
+                <input type="text" class="form-control" name="question" placeholder="Đặt câu hỏi hoặc trả lời..." required>
                 <button class="btn btn-outline-secondary" type="submit">
-                    <i class="bi bi-send"></i> Gửi câu hỏi
+                    <i class="bi bi-send"></i> Gửi
                 </button>
             </div>
         </form>
+        {{/unless}}
         {{else}}
             <div class="alert alert-warning">
-                Vui lòng <a href="/account/signin">đăng nhập</a> để đặt câu hỏi.
+                Vui lòng <a href="/account/signin">đăng nhập</a> để tham gia hỏi đáp.
             </div>
         {{/if}}
 
@@ -216,6 +1409,7 @@
                 {{#if answer}}
                 <div class="ms-4 p-2 bg-light rounded border-start border-4 border-success">
                     <strong>Shop trả lời:</strong> {{answer}}
+                    <div class="text-muted small mt-1">{{answer_at}}</div>
                 </div>
             {{else}}
                 {{#if (isEqual ../product.seller_id ../authUser.id)}}
@@ -237,25 +1431,31 @@
     </div>
 </div>
 
-<div class="card mt-4 mb-5 shadow-sm">
-    <div class="card-header fw-bold bg-white">
-        <i class="bi bi-grid"></i> Sản phẩm tương tự
+<!-- Related Products -->
+<div class="product-section">
+    <div class="section-header">
+        <h4><i class="bi bi-grid me-2"></i>Similar Items</h4>
+        <a href="/products/byCat?id={{product.category_id}}" class="btn btn-sm btn-outline-primary">
+            View All
+        </a>
     </div>
-    <div class="card-body">
-        <div class="row">
+    <div class="section-content">
+        <div class="row g-3">
             {{#each relatedProducts}}
-            <div class="col-md-2 col-6 mb-3">
-                <div class="card h-100 border-0 shadow-sm">
-                    <a href="/products/detail/{{id}}">
-                        <img src="/static/imgs/sp/{{id}}/main_thumbs.jpg" class="card-img-top rounded" 
-                             style="height: 120px; object-fit: cover;">
+            <div class="col-lg-2 col-md-3 col-6">
+                <div class="related-product-card">
+                    <a href="/products/detail/{{id}}" class="product-link">
+                        <div class="related-image">
+                            <img src="{{#if imagePath}}{{imagePath}}{{else}}/static/imgs/sp/{{id}}/main_thumbs.jpg{{/if}}" alt="{{name}}">
+                        </div>
+                        <div class="related-info">
+                            <h6 class="related-title">{{name}}</h6>
+                            <div class="related-price">{{format_currency current_price}}</div>
+                            <div class="related-meta">
+                                <span class="time-left">{{format_remainingTime end_time}}</span>
+                            </div>
+                        </div>
                     </a>
-                    <div class="card-body p-2">
-                        <h6 class="card-title text-truncate" style="font-size: 14px;">
-                            <a href="/products/detail/{{id}}" class="text-decoration-none text-dark">{{name}}</a>
-                        </h6>
-                        <div class="text-danger fw-bold small">{{format_currency current_price}}</div>
-                    </div>
                 </div>
             </div>
             {{/each}}
@@ -274,14 +1474,73 @@
     }
 
     function confirmBid() {
-        const price = $('#bidPriceInput').val();
-        const formattedPrice = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+        const bidInput = document.getElementById('bidPriceInput');
+        const priceValue = bidInput.value.replace(/,/g, '');
+        const formattedPrice = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(priceValue);
         
         const isConfirmed = confirm(`Bạn có chắc muốn ra giá ${formattedPrice} cho sản phẩm này không?`);
         
         if (isConfirmed) {
+            // Remove commas before submitting
+            bidInput.value = priceValue;
             $('#frmBid').submit();
+        }
+    }
+
+    // Format number with thousand separators when user types
+    document.addEventListener('DOMContentLoaded', function() {
+        const bidInput = document.getElementById('bidPriceInput');
+        if (bidInput) {
+            // Format initial value on page load
+            const initialValue = bidInput.value.replace(/,/g, '');
+            if (initialValue && !isNaN(initialValue)) {
+                bidInput.value = Number(initialValue).toLocaleString('en-US');
+            }
+
+            bidInput.addEventListener('input', function(e) {
+                let value = this.value.replace(/,/g, '');
+                if (value && !isNaN(value)) {
+                    // Store cursor position
+                    const cursorPos = this.selectionStart;
+                    const oldLength = this.value.length;
+                    
+                    // Format with commas
+                    this.value = Number(value).toLocaleString('en-US');
+                    
+                    // Restore cursor position adjusted for new commas
+                    const newLength = this.value.length;
+                    const newCursorPos = cursorPos + (newLength - oldLength);
+                    this.setSelectionRange(newCursorPos, newCursorPos);
+                }
+            });
+
+            // Remove commas before form submission
+            bidInput.form.addEventListener('submit', function(e) {
+                bidInput.value = bidInput.value.replace(/,/g, '');
+            });
+        }
+    });
+
+    function incrementBid() {
+        const bidInput = document.getElementById('bidPriceInput');
+        const step = parseFloat(bidInput.dataset.step) || 1;
+        let currentValue = parseFloat(bidInput.value.replace(/,/g, '')) || 0;
+        currentValue += step;
+        bidInput.value = Number(currentValue).toLocaleString('en-US');
+    }
+
+    function decrementBid() {
+        const bidInput = document.getElementById('bidPriceInput');
+        const step = parseFloat(bidInput.dataset.step) || 1;
+        const minValue = parseFloat(bidInput.dataset.min) || 0;
+        let currentValue = parseFloat(bidInput.value.replace(/,/g, '')) || 0;
+        currentValue -= step;
+        if (currentValue >= minValue) {
+            bidInput.value = Number(currentValue).toLocaleString('en-US');
         }
     }
 </script>
 {{/section}}
+
+{{!-- Close the unless block opened at the top --}}
+{{/unless}}

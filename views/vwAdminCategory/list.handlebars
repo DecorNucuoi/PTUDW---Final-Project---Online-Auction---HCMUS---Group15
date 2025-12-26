@@ -3,18 +3,18 @@
         <h5 class="mb-0 text-primary">
             <i class="bi bi-list-ul me-2"></i> Quản lý Danh mục
         </h5>
-        <a href="/admin/categories/add" class="btn btn-success btn-sm">
-            <i class="bi bi-plus-lg"></i> Thêm mới
-        </a>
+        <div>
+            <a href="/admin" class="btn btn-outline-secondary btn-sm me-2">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+            <a href="/admin/categories/add" class="btn btn-success btn-sm">
+                <i class="bi bi-plus-lg"></i> Thêm mới
+            </a>
+        </div>
     </div>
     
     <div class="card-body">
-        {{#if err_message}}
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i> {{err_message}}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        {{/if}}
+
         {{#if this.empty}}
             <div class="text-center py-4 text-muted">
                 <i class="bi bi-folder-x fs-1"></i>
@@ -28,7 +28,7 @@
                             <th style="width: 50px;">#ID</th>
                             <th>Tên danh mục</th>
                             <th>Cấp cha</th>
-                            <th style="width: 150px;">Hành động</th>
+                            <th style="width: 180px;">Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -44,16 +44,26 @@
                                 {{/if}}
                             </td>
                             <td class="text-center">
+                                <a href="/admin/categories/detail/{{id}}" class="btn btn-sm btn-info me-1" title="Chi tiết">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+
                                 <a href="/admin/categories/edit?id={{id}}" class="btn btn-sm btn-primary me-1" title="Chỉnh sửa">
                                     <i class="bi bi-pencil-square"></i>
                                 </a>
 
-                                <form action="/admin/categories/delete" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa danh mục này? Lưu ý: Các sản phẩm thuộc danh mục này có thể bị ảnh hưởng.');">
+                                {{#if (isEqual product_count 0)}}
+                                <form action="/admin/categories/delete" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa danh mục này?');">
                                     <input type="hidden" name="id" value="{{id}}">
                                     <button type="submit" class="btn btn-sm btn-danger" title="Xóa">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
+                                {{else}}
+                                <button type="button" class="btn btn-sm btn-secondary" disabled title="Không thể xóa - Danh mục có {{product_count}} sản phẩm">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                {{/if}}
                             </td>
                         </tr>
                         {{/each}}
@@ -67,3 +77,32 @@
         Tổng cộng: {{categories.length}} danh mục.
     </div>
 </div>
+
+{{#section 'js'}}
+<script>
+    console.log('[ADMIN CATEGORY] Toast script loaded');
+    console.log('[ADMIN CATEGORY] showToast function exists:', typeof showToast);
+    
+    {{#if successMessage}}
+    console.log('[ADMIN CATEGORY] Success message:', {{{json successMessage}}});
+    if (typeof showToast === 'function') {
+        showToast({{{json successMessage}}}, 'success');
+    } else {
+        console.error('[ADMIN CATEGORY] showToast function not found!');
+    }
+    {{else}}
+    console.log('[ADMIN CATEGORY] No success message');
+    {{/if}}
+    
+    {{#if errorMessage}}
+    console.log('[ADMIN CATEGORY] Error message:', {{{json errorMessage}}});
+    if (typeof showToast === 'function') {
+        showToast({{{json errorMessage}}}, 'error');
+    } else {
+        console.error('[ADMIN CATEGORY] showToast function not found!');
+    }
+    {{else}}
+    console.log('[ADMIN CATEGORY] No error message');
+    {{/if}}
+</script>
+{{/section}}

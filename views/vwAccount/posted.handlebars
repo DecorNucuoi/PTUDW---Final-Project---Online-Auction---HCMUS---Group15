@@ -7,7 +7,10 @@
     <div class="col-md-9">
       <div class="card shadow-sm">
         <h5 class="card-header bg-white d-flex justify-content-between align-items-center">
-          <span class="text-primary"><i class="bi bi-shop-window"></i> Sản phẩm đang bán</span>
+          <span class="text-primary">
+            <i class="bi bi-shop-window"></i> 
+            {{#if pageTitle}}{{pageTitle}}{{else}}Sản phẩm đang bán{{/if}}
+          </span>
           
           <a href="/products/upload" class="btn btn-sm btn-primary">
               <i class="bi bi-plus-lg"></i> Đăng mới
@@ -15,6 +18,18 @@
         </h5>
         
         <div class="card-body">
+          {{!-- Filter Buttons --}}
+          <div class="btn-group mb-3" role="group" aria-label="Filter sản phẩm">
+            <a href="/account/posted" class="btn btn-sm {{#if (isEqual currentFilter 'all')}}btn-primary{{else}}btn-outline-primary{{/if}}">
+              <i class="bi bi-list-ul"></i> Tất cả
+            </a>
+            <a href="/account/posted?filter=active" class="btn btn-sm {{#if (isEqual currentFilter 'active')}}btn-success{{else}}btn-outline-success{{/if}}">
+              <i class="bi bi-play-circle"></i> Đang đấu giá
+            </a>
+            <a href="/account/posted?filter=ended" class="btn btn-sm {{#if (isEqual currentFilter 'ended')}}btn-secondary{{else}}btn-outline-secondary{{/if}}">
+              <i class="bi bi-stop-circle"></i> Đã kết thúc
+            </a>
+          </div>
           {{#if empty}}
             <div class="text-center py-4 text-muted">
                 <i class="bi bi-box-seam fs-1"></i>
@@ -37,7 +52,7 @@
                     <td>
                          <div class="d-flex align-items-center">
                              <a href="/products/detail/{{id}}">
-                                <img src="/static/imgs/sp/{{id}}/main_thumbs.jpg" class="rounded me-2 border" style="width: 50px; height: 50px; object-fit: cover;">
+                                <img src="{{#if imagePath}}{{imagePath}}{{else}}/static/imgs/sp/{{id}}/main_thumbs.jpg{{/if}}" class="rounded me-2 border" style="width: 50px; height: 50px; object-fit: cover;">
                              </a>
                              <div class="text-truncate" style="max-width: 200px;">
                                  <a href="/products/detail/{{id}}" class="text-decoration-none fw-bold text-dark">{{name}}</a>
@@ -54,8 +69,30 @@
                     <td>
                         {{#if (isEqual status 1)}}
                             <span class="badge bg-success">Đang đấu</span>
+                        {{else if (isEqual status 2)}}
+                            <div>
+                                <span class="badge bg-secondary mb-1">Đã kết thúc</span>
+                                <br>
+                                {{#if transaction_status}}
+                                    {{#if (isEqual transaction_status 0)}}
+                                        <span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> Chờ thanh toán</span>
+                                    {{else if (isEqual transaction_status 1)}}
+                                        <span class="badge bg-info text-dark"><i class="bi bi-credit-card-fill"></i> Đã thanh toán</span>
+                                    {{else if (isEqual transaction_status 2)}}
+                                        <span class="badge bg-primary"><i class="bi bi-truck"></i> Đã gửi hàng</span>
+                                    {{else if (isEqual transaction_status 3)}}
+                                        <span class="badge bg-purple"><i class="bi bi-check-circle"></i> Đã nhận hàng</span>
+                                    {{else if (isEqual transaction_status 4)}}
+                                        <span class="badge bg-success"><i class="bi bi-star-fill"></i> Hoàn tất</span>
+                                    {{else if (isEqual transaction_status 5)}}
+                                        <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Đã hủy</span>
+                                    {{/if}}
+                                {{else}}
+                                    <span class="badge bg-light text-muted"><i class="bi bi-hourglass"></i> Chưa giao dịch</span>
+                                {{/if}}
+                            </div>
                         {{else}}
-                            <span class="badge bg-secondary">Đã kết thúc</span>
+                            <span class="badge bg-dark">Khác</span>
                         {{/if}}
                     </td>
 
@@ -68,33 +105,34 @@
                     </td>
 
                     <td>
-                        <a href="/products/edit/{{id}}" class="btn btn-sm btn-warning mb-1" title="Bổ sung mô tả">
-                            <i class="bi bi-pencil-square"></i>
-                        </a>
-
-                        {{#if (isEqual status 2)}}
+                        {{#if (isEqual status 1)}}
+                            <a href="/products/edit/{{id}}" class="btn btn-sm btn-warning mb-1" title="Bổ sung mô tả" style="padding: 0.375rem 0.75rem; font-size: 0.8rem;">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                        {{else if (isEqual status 2)}}
                             {{#if winner_id}}
-                                <div class="mt-1 d-flex gap-1">
-                                    <button class="btn btn-sm btn-success" 
-                                            title="Đánh giá người thắng"
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#rateWinnerModal"
-                                            data-pid="{{id}}"
-                                            data-wid="{{winner_id}}"
-                                            data-wname="{{winner_name}}">
-                                        <i class="bi bi-hand-thumbs-up"></i>
-                                    </button>
-
-                                    <form method="post" action="/account/cancel-transaction" class="d-inline">
-                                        <input type="hidden" name="product_id" value="{{id}}">
-                                        <input type="hidden" name="winner_id" value="{{winner_id}}">
-                                        <button type="submit" class="btn btn-sm btn-danger" 
-                                                title="Hủy giao dịch (Khách không trả tiền)"
-                                                onclick="return confirm('Hủy giao dịch sẽ tự động đánh giá -1 cho người này. Bạn chắc chắn chứ?')">
-                                            <i class="bi bi-x-circle"></i>
-                                        </button>
-                                    </form>
-                                </div>
+                                {{#if (or (isEqual transaction_status 0) (isEqual transaction_status 1) (isEqual transaction_status 2) (isEqual transaction_status 3))}}
+                                    {{!-- Đang trong quá trình giao dịch --}}
+                                    <a href="/transaction/{{id}}" class="btn btn-sm btn-primary mb-1 me-1" title="Theo dõi đơn hàng" style="padding: 0.375rem 0.75rem; font-size: 0.8rem;">
+                                        <i class="bi bi-truck"></i>
+                                    </a>
+                                    <a href="/chat/with/{{winner_id}}" class="btn btn-sm btn-success mb-1" title="Chat với người mua" style="padding: 0.375rem 0.75rem; font-size: 0.8rem;">
+                                        <i class="bi bi-chat-dots"></i>
+                                    </a>
+                                {{else if (isEqual transaction_status 4)}}
+                                    {{!-- Giao dịch hoàn tất --}}
+                                    <a href="/transaction/{{id}}" class="btn btn-sm btn-info mb-1 w-100" title="Cập nhật đánh giá">
+                                        <i class="bi bi-pencil-square"></i> Cập nhật đánh giá
+                                    </a>
+                                {{else}}
+                                    {{!-- Chưa có transaction hoặc đã hủy --}}
+                                    <a href="/transaction/{{id}}" class="btn btn-sm btn-primary mb-1 me-1" title="Theo dõi đơn hàng" style="padding: 0.375rem 0.75rem; font-size: 0.8rem;">
+                                        <i class="bi bi-truck"></i>
+                                    </a>
+                                    <a href="/chat/with/{{winner_id}}" class="btn btn-sm btn-success mb-1" title="Chat với người mua" style="padding: 0.375rem 0.75rem; font-size: 0.8rem;">
+                                        <i class="bi bi-chat-dots"></i>
+                                    </a>
+                                {{/if}}
                             {{/if}}
                         {{/if}}
                     </td>

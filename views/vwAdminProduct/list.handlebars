@@ -1,8 +1,13 @@
 <div class="card shadow-sm">
     <div class="card-header bg-white py-3">
-        <h5 class="mb-0 text-primary">
-            <i class="bi bi-box-seam me-2"></i> Quản lý Sản phẩm
-        </h5>
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 text-primary">
+                <i class="bi bi-box-seam me-2"></i> Quản lý Sản phẩm
+            </h5>
+            <a href="/admin" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+        </div>
     </div>
 
     <div class="card-body">
@@ -20,7 +25,7 @@
                             <th>Giá hiện tại</th>
                             <th>Người bán</th> 
                             <th>Trạng thái</th>
-                            <th>Xóa</th>
+                            <th>Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -55,20 +60,47 @@
                             </td>
 
                             <td class="text-center">
-                                {{#if (isEqual status 1)}}
+                                {{#if (isEqual status -1)}}
+                                    <span class="badge bg-danger">Đã gỡ bỏ</span>
+                                {{else if (isEqual status 0)}}
+                                    <span class="badge bg-secondary">Nháp</span>
+                                {{else if (isEqual status 1)}}
                                     <span class="badge bg-success">Đang đấu</span>
-                                {{else}}
-                                    <span class="badge bg-secondary">Kết thúc</span>
+                                {{else if (isEqual status 2)}}
+                                    <span class="badge bg-info">Kết thúc</span>
                                 {{/if}}
                             </td>
 
                             <td class="text-center">
-                                <form method="POST" action="/admin/products/delete" class="d-inline" onsubmit="return confirm('CẢNH BÁO: Bạn có chắc chắn muốn gỡ bỏ sản phẩm này không? Hành động này không thể hoàn tác!');">
-                                    <input type="hidden" name="id" value="{{id}}">
-                                    <button type="submit" class="btn btn-sm btn-danger mb-1" title="Gỡ bỏ sản phẩm">
+                                <!-- View Detail -->
+                                <a href="/admin/products/detail/{{id}}" class="btn btn-sm btn-info mb-1" title="Xem chi tiết">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                
+                                {{#if (isEqual status -1)}}
+                                    <!-- Restore button for soft-deleted products -->
+                                    <form method="POST" action="/admin/products/restore" class="d-inline">
+                                        <input type="hidden" name="id" value="{{id}}">
+                                        <button type="submit" class="btn btn-sm btn-success mb-1" title="Khôi phục">
+                                            <i class="bi bi-arrow-counterclockwise"></i>
+                                        </button>
+                                    </form>
+                                {{else}}
+                                    <!-- Soft delete button - only show if can delete -->
+                                    {{#if can_delete}}
+                                    <form method="POST" action="/admin/products/soft-delete" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn gỡ bỏ sản phẩm này không?');">
+                                        <input type="hidden" name="id" value="{{id}}">
+                                        <button type="submit" class="btn btn-sm btn-warning mb-1" title="Gỡ bỏ (đã kết thúc & có đánh giá)">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                    {{else}}
+                                    <button type="button" class="btn btn-sm btn-secondary mb-1" disabled 
+                                            title="{{#if (isEqual status 0)}}Không thể xóa sản phẩm nháp{{else if (isEqual status 1)}}Không thể xóa sản phẩm đang đấu giá{{else}}Chưa đủ điều kiện: Phải kết thúc đấu giá & cả 2 bên đánh giá{{/if}}">
                                         <i class="bi bi-trash"></i>
                                     </button>
-                                </form>
+                                    {{/if}}
+                                {{/if}}
                             </td>
                         </tr>
                         {{/each}}
@@ -82,3 +114,32 @@
         Tổng cộng: {{products.length}} sản phẩm.
     </div>
 </div>
+
+{{#section 'js'}}
+<script>
+    console.log('[ADMIN PRODUCT] Toast script loaded');
+    console.log('[ADMIN PRODUCT] showToast function exists:', typeof showToast);
+    
+    {{#if successMessage}}
+    console.log('[ADMIN PRODUCT] Success message:', {{{json successMessage}}});
+    if (typeof showToast === 'function') {
+        showToast({{{json successMessage}}}, 'success');
+    } else {
+        console.error('[ADMIN PRODUCT] showToast function not found!');
+    }
+    {{else}}
+    console.log('[ADMIN PRODUCT] No success message');
+    {{/if}}
+    
+    {{#if errorMessage}}
+    console.log('[ADMIN PRODUCT] Error message:', {{{json errorMessage}}});
+    if (typeof showToast === 'function') {
+        showToast({{{json errorMessage}}}, 'error');
+    } else {
+        console.error('[ADMIN PRODUCT] showToast function not found!');
+    }
+    {{else}}
+    console.log('[ADMIN PRODUCT] No error message');
+    {{/if}}
+</script>
+{{/section}}

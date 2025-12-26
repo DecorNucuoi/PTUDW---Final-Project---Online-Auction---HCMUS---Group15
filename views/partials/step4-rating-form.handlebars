@@ -1,0 +1,81 @@
+<div class="card">
+    <div class="card-header bg-warning">
+        <h5>
+            <i class="bi bi-4-circle"></i> Bước 4: Đánh giá giao dịch
+            <i class="bi bi-info-circle ms-2" data-bs-toggle="tooltip" data-bs-placement="top" 
+               title="Đánh giá chất lượng giao dịch để xây dựng uy tín"></i>
+        </h5>
+    </div>
+    <div class="card-body">
+        {{#if isBuyer}}
+        <h6 class="mb-3">Đánh giá người bán</h6>
+        <p class="text-muted">Người bán: <strong>{{seller.full_name}}</strong></p>
+        {{else}}
+        <h6 class="mb-3">Đánh giá người mua</h6>
+        <p class="text-muted">Người mua: <strong>{{buyer.full_name}}</strong></p>
+        {{/if}}
+
+        {{!-- Check if already rated --}}
+        {{#if hasRated}}
+        <div class="alert alert-success">
+            <i class="bi bi-check-circle"></i> Bạn đã đánh giá: 
+            <strong>{{#if (isEqual myRating.score 1)}}👍 Tích cực{{else}}👎 Tiêu cực{{/if}}</strong>
+            <p class="mb-0 mt-2">"{{myRating.comment}}"</p>
+            <button class="btn btn-sm btn-outline-primary mt-2" type="button" data-bs-toggle="collapse" data-bs-target="#editRating">
+                Chỉnh sửa đánh giá
+            </button>
+        </div>
+        
+        <div id="editRating" class="collapse">
+        {{/if}}
+
+        <form method="POST" action="/transaction/{{transaction.id}}/step4">
+            <div class="mb-3">
+                <label class="form-label">Chọn đánh giá</label>
+                <div class="btn-group w-100" role="group">
+                    <input type="radio" class="btn-check" name="score" id="positive" value="1" required
+                        {{#if (and hasRated (isEqual myRating.score 1))}}checked{{/if}}>
+                    <label class="btn btn-outline-success" for="positive">
+                        <i class="bi bi-hand-thumbs-up fs-4"></i><br>Tích cực (+1)
+                    </label>
+
+                    <input type="radio" class="btn-check" name="score" id="negative" value="-1" required
+                        {{#if (and hasRated (isEqual myRating.score -1))}}checked{{/if}}>
+                    <label class="btn btn-outline-danger" for="negative">
+                        <i class="bi bi-hand-thumbs-down fs-4"></i><br>Tiêu cực (-1)
+                    </label>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Nhận xét ngắn</label>
+                <textarea name="comment" class="form-control" rows="3" required
+                    placeholder="Chia sẻ trải nghiệm của bạn về giao dịch này...">{{#if hasRated}}{{myRating.comment}}{{/if}}</textarea>
+            </div>
+
+            <button type="submit" class="btn btn-warning w-100">
+                <i class="bi bi-star-fill"></i> {{#if hasRated}}Cập nhật{{else}}Gửi{{/if}} đánh giá
+            </button>
+        </form>
+
+        {{#if hasRated}}
+        </div>
+        {{/if}}
+
+        {{!-- Show waiting message if only one person rated --}}
+        {{#if (and (not bothRated) partnerRated)}}
+        <div class="alert alert-info mt-3">
+            {{#if isBuyer}}Người bán{{else}}Người mua{{/if}} đã đánh giá. 
+            Chờ bạn hoàn tất để kết thúc giao dịch.
+        </div>
+        {{/if}}
+
+        {{!-- Show completion if both rated --}}
+        {{#if bothRated}}
+        <div class="alert alert-success mt-3">
+            <i class="bi bi-check-circle-fill"></i> 
+            <strong>Giao dịch đã hoàn tất!</strong> Cả hai bên đã đánh giá.
+        </div>
+        {{/if}}
+    </div>
+</div>

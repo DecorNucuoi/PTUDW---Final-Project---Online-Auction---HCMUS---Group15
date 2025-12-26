@@ -8,26 +8,31 @@
         <a href="/account/profile" class="list-group-item list-group-item-action {{#if (isEqual currentSection 'profile')}}active{{/if}}">
             <i class="bi bi-person-lines-fill me-2"></i> Thông tin cá nhân
         </a>
+        
+        {{#unless (isEqual authUser.role 2)}}
         <a href="/account/watchlist" class="list-group-item list-group-item-action {{#if (isEqual currentSection 'watchlist')}}active{{/if}}">
             <i class="bi bi-heart me-2"></i> Sản phẩm yêu thích
         </a>
         <a href="/account/bidding" class="list-group-item list-group-item-action {{#if (isEqual currentSection 'bidding')}}active{{/if}}">
-            <i class="bi bi-hammer me-2"></i> Đang đấu giá
+            <i class="bi bi-hammer me-2"></i> Đấu giá của tôi
         </a>
         <a href="/account/won" class="list-group-item list-group-item-action {{#if (isEqual currentSection 'won')}}active{{/if}}">
-            <i class="bi bi-trophy me-2"></i> Sản phẩm đã thắng
+            <i class="bi bi-trophy me-2"></i> Đã thắng đấu giá
         </a>
         <a href="/account/ratings" class="list-group-item list-group-item-action {{#if (isEqual currentSection 'ratings')}}active{{/if}}">
             <i class="bi bi-star-half me-2"></i> Hồ sơ tín nhiệm
         </a>
+        {{/unless}}
+        
         {{#if (isEqual authUser.role 1)}}
             <a href="/products/upload" class="list-group-item list-group-item-action list-group-item-warning fw-bold">
                 <i class="bi bi-plus-circle-fill me-2"></i> Đăng sản phẩm mới
             </a>
             <a href="/account/posted" class="list-group-item list-group-item-action {{#if (isEqual currentSection 'posted')}}active{{/if}}">
-                <i class="bi bi-list-ul me-2"></i> Sản phẩm của tôi
+                <i class="bi bi-list-ul me-2"></i> Tất cả sản phẩm
             </a>
         {{/if}}
+        
         <a href="/account/change-password" class="list-group-item list-group-item-action {{#if (isEqual currentSection 'password')}}active{{/if}}">
             <i class="bi bi-key me-2"></i> Đổi mật khẩu
         </a>

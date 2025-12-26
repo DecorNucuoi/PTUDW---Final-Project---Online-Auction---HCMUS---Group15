@@ -7,7 +7,7 @@ router.post('/api/add', async function (req, res) {
     if (!req.session.isAuthenticated) {
         return res.status(401).json({ 
             authenticated: false, 
-            message: 'Please login first' 
+            message: 'Vui lòng đăng nhập để thêm vào danh sách yêu thích!' 
         });
     }
 
@@ -16,10 +16,27 @@ router.post('/api/add', async function (req, res) {
 
     try {
         const result = await watchlistService.add(userId, productId);
-        res.json({ success: true, action: result.action });
+        
+        // Trả về message cho client
+        if (result.action === 'added') {
+            res.json({ 
+                success: true, 
+                action: 'added',
+                message: 'Đã thêm vào danh sách yêu thích!' 
+            });
+        } else {
+            res.json({ 
+                success: true, 
+                action: 'removed',
+                message: 'Đã xóa khỏi danh sách yêu thích!' 
+            });
+        }
     } catch (err) {
         console.error(err);
-        res.status(500).json({ success: false });
+        res.status(500).json({ 
+            success: false,
+            message: 'Có lỗi xảy ra, vui lòng thử lại!' 
+        });
     }
 });
 

@@ -1,135 +1,519 @@
 {{#section 'css'}}
 <style>
-    /* CSS Loading spinner */
-    .loader {
-        border: 5px solid #f3f3f3;
-        border-top: 5px solid #3498db;
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        animation: spin 1s linear infinite;
-        margin: 20px auto;
-        display: none; 
+    .main-content {
+        min-height: 80vh;
     }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Category Filter Bar - Top of Page */
+    .category-filter-bar {
+        background: var(--bg-white);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 2rem;
+    }
+
+    .filter-bar-header h5 {
+        margin: 0;
+        color: var(--text-color);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+    }
+
+    .category-chips-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+
+    .category-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.5rem 1rem;
+        background: var(--bg-gray);
+        color: var(--text-color);
+        text-decoration: none;
+        border-radius: var(--radius-full);
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: var(--transition);
+        border: 2px solid transparent;
+        white-space: nowrap;
+    }
+
+    .category-chip:hover {
+        background: var(--secondary-color);
+        color: var(--primary-color);
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .category-chip.active {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+    .category-chip.active:hover {
+        background: var(--primary-dark);
+        border-color: var(--primary-dark);
+        color: white;
+    }
+
+    .chip-count {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.2rem 0.5rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-left: 0.25rem;
+    }
+
+    .category-chip:not(.active) .chip-count {
+        background: var(--border-color);
+        color: var(--text-muted);
+    }
+
+    /* Filters Sidebar - Renamed from category-sidebar */
+    .filters-sidebar {
+        background: var(--bg-white);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-sm);
+        padding: 0;
+        overflow: hidden;
+        position: sticky;
+        top: 100px;
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+    }
+
+    .filters-header {
+        padding: 1.5rem;
+        background: var(--secondary-color);
+        border-bottom: 1px solid var(--border-color);
+        font-weight: 600;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+
+    .filter-section {
+        padding: 1.5rem 0;
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    .filter-section:last-child {
+        border-bottom: none;
+    }
+
+    .filter-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 1rem;
+        padding: 0 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .products-header {
+        background: var(--bg-white);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-color);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .products-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .results-count {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+
+    .loading-spinner {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 4rem 0;
+    }
+
+    .spinner-border {
+        width: 3rem;
+        height: 3rem;
+        border-width: 0.3em;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-muted);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
 </style>
 {{/section}}
 
-<div class="card">
-    <div class="card-header bg-primary text-white">
-        Danh sách sản phẩm
-    </div>
-    <div class="card-body">
-        
-        <!-- Loading -->
-        <div id="loading" class="loader"></div>
+<div class="main-content">
+    <div class="container-fluid">
+        <!-- Category Filter Bar (only show when appropriate) -->
+        {{#if showCategoryFilter}}
+        <div class="category-filter-bar mb-4">
+            <div class="filter-bar-header">
+                <h5><i class="bi bi-funnel me-2"></i>{{filterTitle}}</h5>
+            </div>
+            <div class="category-chips-container">
+                <!-- Back navigation for subcategories -->
+                {{#if (and selectedCategory (not (isEqual selectedCategory.id 0)))}}
+                <a href="/products/byCat?id=0" class="category-chip">
+                    <i class="bi bi-arrow-left me-1"></i>All Categories
+                </a>
+                {{#unless selectedCategory.parent_id}}
+                <!-- If viewing parent category, show "All [ParentName]" active chip -->
+                <a href="/products/byCat?id={{selectedCategory.id}}" class="category-chip active">
+                    <i class="bi bi-grid-3x3-gap me-1"></i>All {{selectedCategory.name}}
+                </a>
+                {{/unless}}
+                {{/if}}
 
-        <!-- 1. Container -->
-        <div id="product-container" class="row g-3">
-            <!-- JavaScript -->
+                <!-- Display filter categories -->
+                {{#each filterCategories}}
+                <a href="/products/byCat?id={{id}}"
+                    class="category-chip {{#if (isEqual id ../selectedCatId)}}active{{/if}}">
+                    <i class="bi bi-tag me-1"></i>{{name}}
+                    {{#if product_count}}<span class="chip-count">{{product_count}}</span>{{/if}}
+                </a>
+                {{/each}}
+            </div>
         </div>
+        {{/if}}
 
-        <!-- 2. Container-->
-        <nav class="mt-4">
-            <ul id="pagination-container" class="pagination justify-content-center">
-                <!-- JavaScript -->
-            </ul>
-        </nav>
+        <div class="row">
+            <!-- Filters Sidebar (for non-category filters) -->
+            <div class="col-lg-3 mb-4">
+                <div class="filters-sidebar">
+                    <div class="filters-header">
+                        <i class="bi bi-sliders"></i>
+                        <span>Filters</span>
+                    </div>
+
+                    <!-- Price Range Filter -->
+                    <div class="filter-section">
+                        <h6 class="filter-title">
+                            <i class="bi bi-currency-dollar"></i>Price Range
+                        </h6>
+                        <div class="px-3">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="number" class="form-control form-control-sm" placeholder="Min"
+                                        id="minPrice">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" class="form-control form-control-sm" placeholder="Max"
+                                        id="maxPrice">
+                                </div>
+                            </div>
+                            <button class="btn btn-outline-primary btn-sm w-100 mt-2" id="applyPriceFilter">
+                                Apply
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Sort Options -->
+                    <div class="filter-section">
+                        <h6 class="filter-title">
+                            <i class="bi bi-sort-down"></i>Sort By
+                        </h6>
+                        <div class="px-3">
+                            <select class="form-select form-select-sm" id="sortSelect">
+                                <option value="time_desc">Newest First</option>
+                                <option value="time_asc">Ending Soon</option>
+                                <option value="price_desc">Price: High to Low</option>
+                                <option value="price_asc">Price: Low to High</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-lg-9">
+                <!-- Products Header -->
+                <div class="products-header">
+                    <h2 class="products-title">
+                        <i class="bi bi-collection"></i>
+                        <span id="category-title">Products</span>
+                    </h2>
+                    <div class="results-count" id="results-info">
+                        Loading products...
+                    </div>
+                </div>
+
+                <!-- Loading -->
+                <div id="loading" class="loading-spinner" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+
+                <!-- Product Grid -->
+                <div id="product-container" class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4">
+                    <!-- Products will be loaded here -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="empty-state" style="display: none;">
+                    <i class="bi bi-inbox"></i>
+                    <h4>No products found</h4>
+                    <p>Try adjusting your search criteria or browse other categories.</p>
+                </div>
+
+                <!-- Pagination -->
+                <nav class="mt-4">
+                    <ul id="pagination-container" class="pagination justify-content-center">
+                        <!-- Pagination will be generated by JavaScript -->
+                    </ul>
+                </nav>
+            </div>
+        </div>
     </div>
 </div>
 
 {{#section 'js'}}
 <script>
-    const categoryId = "{{catId}}"; 
+    let categoryId = "{{catId}}";
+    let currentPage = 1;
+    let sortBy = 'time_desc';
+    let minPrice = null;
+    let maxPrice = null;
 
     function formatCurrency(amount) {
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+        return new Intl.NumberFormat('en-US').format(amount);
     }
 
-    function formatDate(dateString) {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('vi-VN') + ' ' + date.toLocaleTimeString('vi-VN');
+    function formatTimeLeft(endDate) {
+        const end = new Date(endDate);
+        const now = new Date();
+        const diff = end - now;
+
+        if (diff <= 0) return 'Ended';
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+        if (days > 0) return `${days}d ${hours}h`;
+        if (hours > 0) return `${hours}h ${minutes}m`;
+        return `${minutes}m`;
     }
 
-    function loadProducts(page) {
+    function isEndingSoon(endDate) {
+        const end = new Date(endDate);
+        const now = new Date();
+        const diff = end - now;
+        return diff > 0 && diff <= 24 * 60 * 60 * 1000; // 24 hours
+    }
+
+    function loadProducts(page = 1) {
+        currentPage = page;
         $('#loading').show();
-        $('#product-container').empty(); 
-        
-        $.getJSON(`/products/api/byCat?id=${categoryId}&page=${page}`, function(data) {
-            $('#loading').hide();
+        $('#product-container, #empty-state').hide();
 
-            if (data.products.length === 0) {
-                $('#product-container').html('<p class="text-center">Không có sản phẩm nào.</p>');
-                return;
-            }
+        const params = new URLSearchParams({
+            id: categoryId,
+            page: page,
+            sort: sortBy
+        });
 
-            const html = data.products.map(p => `
-                <div class="col-sm-6 col-md-4 col-lg-4">
-                    <div class="card h-100 shadow-sm border-0">
-                        
-                        <div class="position-relative overflow-hidden">
-                            
-                            <a href="/products/detail/${p.id}">
-                                <img src="${p.imagePath}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="${p.name}">
-                            </a>
-                            
-                            <button class="btn btn-light shadow-sm position-absolute bottom-0 end-0 m-2 rounded-circle btn-watchlist"
-                                    style="width: 35px; height: 35px; padding: 0; display: flex; align-items: center; justify-content: center; z-index: 10;"
-                                    data-id="${p.id}" 
-                                    title="Thêm vào yêu thích">
-                                <i class="bi bi-heart text-danger" style="font-size: 16px;"></i>
-                            </button>
-                        </div>
+        if (minPrice) params.append('minPrice', minPrice);
+        if (maxPrice) params.append('maxPrice', maxPrice);
 
-                        <div class="card-body d-flex flex-column">
-                            <h6 class="card-title fw-bold text-truncate">
-                                <a href="/products/detail/${p.id}" class="text-decoration-none text-dark">${p.name}</a>
-                            </h6>
-                            <div class="mt-auto">
-                                <h5 class="text-primary fw-bold">${formatCurrency(p.current_price)}</h5>
-                                <small class="text-muted">Start: ${formatCurrency(p.start_price)}</small>
+        $.getJSON(`/products/api/byCat?${params.toString()}`)
+            .done(function (data) {
+                $('#loading').hide();
+
+                // Update results info
+                const categoryName = getCategoryName(categoryId);
+                const total = data.total || 0;
+                $('#category-title').text(categoryName);
+                $('#results-info').text(`Showing ${data.products.length} of ${total} products`);
+
+                if (data.products.length === 0) {
+                    $('#empty-state').show();
+                    $('#pagination-container').empty();
+                    return;
+                }
+
+                const html = data.products.map(p => `
+                    <div class="col">
+                        <div class="card-product h-100">
+                            <div class="card-img-container">
+                                <a href="/products/detail/${p.id}">
+                                    <img src="${p.imagePath}" 
+                                         alt="${p.name}" loading="lazy">
+                                </a>
+                                ${isEndingSoon(p.end_time) ? '<div class="card-badge badge-hot">Ending Soon</div>' : ''}
+                                <button class="btn btn-watchlist position-absolute" 
+                                        style="top: 0.75rem; right: 0.75rem; width: 36px; height: 36px; padding: 0; z-index: 10;"
+                                        data-id="${p.id}" title="Add to Watchlist">
+                                    <i class="bi bi-heart"></i>
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="meta-text mb-1">Lot #${p.id}</div>
+                                <h6 class="card-title">
+                                    <a href="/products/detail/${p.id}">${p.name}</a>
+                                </h6>
+                                <div class="card-stats">
+                                    <div>
+                                        <div class="price-label">Current Bid</div>
+                                        <div class="price-current">$${formatCurrency(p.current_price)}</div>
+                                    </div>
+                                    <div class="time-remaining ${isEndingSoon(p.end_time) ? 'ending-soon' : ''}">
+                                        <i class="bi bi-clock"></i>
+                                        <span>${formatTimeLeft(p.end_time)}</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        
-                        <div class="card-footer bg-white border-top-0">
-                            <a href="/products/detail/${p.id}" class="btn btn-outline-primary w-100 btn-sm">Chi tiết</a>
-                        </div>
                     </div>
-                </div>
+                `).join('');
 
-            `).join('');
+                $('#product-container').html(html).show();
+                renderPagination(data.currentPage, data.totalPages);
+            })
+            .fail(function () {
+                $('#loading').hide();
+                $('#product-container').html('<div class="col-12 text-center py-5 text-danger">Error loading products. Please try again.</div>').show();
+            });
+    }
 
-            $('#product-container').html(html);
-
-            renderPagination(data.currentPage, data.totalPages);
-        });
+    function getCategoryName(catId) {
+                const categories = {{{json categories}}};
+    const category = categories.find(c => c.id == catId);
+    return category ? category.name : 'All Products';
     }
 
     function renderPagination(current, total) {
+        if (total <= 1) {
+            $('#pagination-container').empty();
+            return;
+        }
+
         let html = '';
+        const maxVisible = 5;
+        let start = Math.max(1, current - Math.floor(maxVisible / 2));
+        let end = Math.min(total, start + maxVisible - 1);
 
+        if (end - start + 1 < maxVisible) {
+            start = Math.max(1, end - maxVisible + 1);
+        }
+
+        // Previous button
         if (current > 1) {
-            html += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="loadProducts(${current - 1})">Previous</a></li>`;
-        } else {
-            html += `<li class="page-item disabled"><span class="page-link">Previous</span></li>`;
+            html += `<li class="page-item">
+                <a class="page-link" href="javascript:void(0)" onclick="loadProducts(${current - 1})">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>`;
         }
 
-        for (let i = 1; i <= total; i++) {
+        // First page
+        if (start > 1) {
+            html += `<li class="page-item">
+                <a class="page-link" href="javascript:void(0)" onclick="loadProducts(1)">1</a>
+            </li>`;
+            if (start > 2) {
+                html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+        }
+
+        // Page numbers
+        for (let i = start; i <= end; i++) {
             const activeClass = i === current ? 'active' : '';
-            html += `<li class="page-item ${activeClass}"><a class="page-link" href="javascript:void(0)" onclick="loadProducts(${i})">${i}</a></li>`;
+            html += `<li class="page-item ${activeClass}">
+                <a class="page-link" href="javascript:void(0)" onclick="loadProducts(${i})">${i}</a>
+            </li>`;
         }
 
+        // Last page
+        if (end < total) {
+            if (end < total - 1) {
+                html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+            html += `<li class="page-item">
+                <a class="page-link" href="javascript:void(0)" onclick="loadProducts(${total})">${total}</a>
+            </li>`;
+        }
+
+        // Next button
         if (current < total) {
-            html += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="loadProducts(${current + 1})">Next</a></li>`;
-        } else {
-            html += `<li class="page-item disabled"><span class="page-link">Next</span></li>`;
+            html += `<li class="page-item">
+                <a class="page-link" href="javascript:void(0)" onclick="loadProducts(${current + 1})">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>`;
         }
 
         $('#pagination-container').html(html);
     }
 
-    $(document).ready(function() {
+    // Event handlers
+    $(document).ready(function () {
+        // Load initial products
         loadProducts(1);
+
+        // Sort change
+        $('#sortSelect').on('change', function () {
+            sortBy = $(this).val();
+            loadProducts(1);
+        });
+
+        // Price filter
+        $('#applyPriceFilter').on('click', function () {
+            minPrice = $('#minPrice').val() || null;
+            maxPrice = $('#maxPrice').val() || null;
+            loadProducts(1);
+        });
+
+        // Sidebar category toggle
+        $('.sidebar-category > a').on('click', function (e) {
+            const parent = $(this).parent();
+            if (parent.find('.sidebar-subcategories').length > 0) {
+                e.preventDefault();
+                parent.toggleClass('expanded');
+            }
+        });
+
+        // Clear filters
+        $(document).on('keyup', '#minPrice, #maxPrice', function (e) {
+            if (e.key === 'Enter') {
+                $('#applyPriceFilter').click();
+            }
+        });
     });
 </script>
 {{/section}}

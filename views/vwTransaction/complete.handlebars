@@ -1,0 +1,510 @@
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <!-- Left Column: Product Info Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm sticky-top" style="top: 20px;">
+                <img src="{{product.main_image}}" class="card-img-top" alt="{{product.name}}" 
+                    style="height: 250px; object-fit: cover;">
+                <div class="card-body">
+                    <h5 class="card-title">{{product.name}}</h5>
+                    <p class="text-success fs-4 mb-3">
+                        <i class="bi bi-currency-dollar"></i>
+                        {{format_currency transaction.final_price}}
+                    </p>
+                    <hr>
+                    <div class="mb-2">
+                        <strong><i class="bi bi-shop"></i> Người bán:</strong>
+                        <p class="mb-0">{{seller.full_name}}</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong><i class="bi bi-person-check"></i> Người mua:</strong>
+                        <p class="mb-0">{{buyer.full_name}}</p>
+                    </div>
+                    <a href="/chat/with/{{chatPartnerId}}?ref=transaction&productId={{product.id}}" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-chat-dots"></i> Chat với {{#if isBuyer}}người bán{{else}}người mua{{/if}}
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Transaction Progress & Forms -->
+        <div class="col-md-8">
+            <h3 class="mb-4">
+                <i class="bi bi-receipt"></i> Hoàn tất giao dịch
+            </h3>
+
+            <!-- Progress Bar Component -->
+            {{> transaction-progress transaction=transaction}}
+
+            <!-- Dynamic Content Based on Status -->
+            <div class="transaction-content">
+                {{#if (isEqual transaction.status 0)}}
+                    {{!-- Step 1: Waiting for payment --}}
+                    {{#if isBuyer}}
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i class="bi bi-1-circle"></i> Bước 1: Thanh toán</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="POST" action="/transaction/{{transaction.id}}/step1" enctype="multipart/form-data">
+                                    <div class="mb-3">
+                                        <label class="form-label">Địa chỉ giao hàng</label>
+                                        <textarea name="shipping_address" class="form-control" rows="3" required
+                                            placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố"></textarea>
+                                        <small class="text-muted">Địa chỉ này sẽ được sử dụng để giao hàng</small>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Hoá đơn thanh toán</label>
+                                        <input type="file" name="payment_proof" class="form-control" 
+                                            accept="image/*,.pdf" required>
+                                        <small class="text-muted">JPG, PNG hoặc PDF, tối đa 5MB</small>
+                                    </div>
+
+                                    <div class="alert alert-warning">
+                                        <i class="bi bi-exclamation-triangle"></i>
+                                        Vui lòng chuyển khoản <strong>{{format_currency transaction.final_price}}</strong> 
+                                        đến tài khoản của người bán và upload ảnh chụp biên lai.
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="bi bi-upload"></i> Upload và Tiếp tục
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    {{else}}
+                        <div class="alert alert-info">
+                            <i class="bi bi-hourglass-split"></i>
+                            <h5>Đang chờ người mua thanh toán...</h5>
+                            <p class="mb-0">Người mua sẽ upload hoá đơn thanh toán và cung cấp địa chỉ giao hàng.</p>
+                        </div>
+                    {{/if}}
+                {{/if}}
+
+                {{#if (isEqual transaction.status 1)}}
+                    {{!-- Step 2: Payment submitted, waiting for shipping --}}
+                    {{#if isSeller}}
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="bi bi-2-circle"></i> Bước 2: Gửi hàng</h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Display payment info first -->
+                                <div class="alert alert-info mb-3">
+                                    <h6><i class="bi bi-info-circle"></i> Thông tin thanh toán từ người mua:</h6>
+                                    <p class="mb-2"><strong>Địa chỉ giao hàng:</strong></p>
+                                    <p class="ms-3">{{transaction.shipping_address}}</p>
+                                    <p class="mb-0">
+                                        <strong>Hoá đơn thanh toán:</strong> 
+                                        <a href="{{transaction.payment_proof}}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-file-earmark-image"></i> Xem hoá đơn
+                                        </a>
+                                    </p>
+                                </div>
+
+                                <form method="POST" action="/transaction/{{transaction.id}}/step2">
+                                    <div class="mb-3">
+                                        <label class="form-label">Mã vận đơn / Tracking Number</label>
+                                        <input type="text" name="shipping_tracking" class="form-control" required
+                                            placeholder="VD: VNP123456789">
+                                        <small class="text-muted">Nhập mã theo dõi từ đơn vị vận chuyển</small>
+                                    </div>
+
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="confirmShip" required>
+                                        <label class="form-check-label" for="confirmShip">
+                                            Tôi xác nhận đã nhận tiền và đã gửi hàng
+                                        </label>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-success w-100">
+                                        <i class="bi bi-box-seam"></i> Xác nhận đã gửi hàng
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    {{else}}
+                        <div class="alert alert-info">
+                            <i class="bi bi-hourglass-split"></i>
+                            <h5>Đang chờ người bán xác nhận và gửi hàng...</h5>
+                            <p class="mb-2">Thông tin bạn đã cung cấp:</p>
+                            <p class="mb-1"><strong>Địa chỉ:</strong> {{transaction.shipping_address}}</p>
+                            <p class="mb-0">
+                                <strong>Hoá đơn:</strong> 
+                                <a href="{{transaction.payment_proof}}" target="_blank">Xem hoá đơn của bạn</a>
+                            </p>
+                        </div>
+                    {{/if}}
+                {{/if}}
+
+                {{#if (isEqual transaction.status 2)}}
+                    {{!-- Step 3: Shipped, waiting for buyer confirmation --}}
+                    {{#if isBuyer}}
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0"><i class="bi bi-3-circle"></i> Bước 3: Xác nhận đã nhận hàng</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-success mb-3">
+                                    <h6><i class="bi bi-box-seam"></i> Thông tin gửi hàng:</h6>
+                                    <p class="mb-0"><strong>Mã vận đơn:</strong> <code>{{transaction.shipping_tracking}}</code></p>
+                                    <p class="mb-0 mt-2 text-muted">Vui lòng kiểm tra sản phẩm trước khi xác nhận.</p>
+                                </div>
+
+                                <form method="POST" action="/transaction/{{transaction.id}}/step3">
+                                    <div class="alert alert-warning">
+                                        <i class="bi bi-exclamation-triangle"></i>
+                                        <strong>Lưu ý:</strong> Sau khi xác nhận, bạn và người bán sẽ đánh giá nhau về chất lượng giao dịch.
+                                    </div>
+
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="confirmReceived" required>
+                                        <label class="form-check-label" for="confirmReceived">
+                                            Tôi xác nhận đã nhận hàng và sản phẩm đúng như mô tả
+                                        </label>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-info w-100">
+                                        <i class="bi bi-check-circle"></i> Xác nhận đã nhận hàng
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    {{else}}
+                        <div class="alert alert-info">
+                            <i class="bi bi-hourglass-split"></i>
+                            <h5>Đã gửi hàng. Đang chờ người mua xác nhận...</h5>
+                            <p class="mb-0"><strong>Mã vận đơn:</strong> <code>{{transaction.shipping_tracking}}</code></p>
+                        </div>
+                    {{/if}}
+                {{/if}}
+
+                {{#if (or (isEqual transaction.status 3) (isEqual transaction.status 4))}}
+                    {{!-- Step 4: Rating phase --}}
+                    <div class="card shadow-sm mb-3">
+                        <div class="card-header bg-warning">
+                            <h5 class="mb-0"><i class="bi bi-4-circle"></i> Bước 4: Đánh giá giao dịch</h5>
+                        </div>
+                        <div class="card-body">
+                            {{#if isBuyer}}
+                                <h6 class="mb-3">Đánh giá người bán</h6>
+                                <p class="text-muted">Người bán: <strong>{{seller.full_name}}</strong></p>
+                            {{else}}
+                                <h6 class="mb-3">Đánh giá người mua</h6>
+                                <p class="text-muted">Người mua: <strong>{{buyer.full_name}}</strong></p>
+                            {{/if}}
+
+                            {{#if (and isBuyer hasRatedBuyer)}}
+                                <div class="alert alert-success">
+                                    <i class="bi bi-check-circle"></i> Bạn đã đánh giá: 
+                                    <strong>{{#if (isEqual buyerRating.score 1)}}👍 Tích cực{{else}}👎 Tiêu cực{{/if}}</strong>
+                                    <p class="mb-0 mt-2">"{{buyerRating.comment}}"</p>
+                                    <button class="btn btn-sm btn-outline-primary mt-2" data-bs-toggle="collapse" data-bs-target="#editRating">
+                                        Chỉnh sửa đánh giá
+                                    </button>
+                                </div>
+                            {{/if}}
+
+                            {{#if (and isSeller hasRatedSeller)}}
+                                <div class="alert alert-success">
+                                    <i class="bi bi-check-circle"></i> Bạn đã đánh giá: 
+                                    <strong>{{#if (isEqual sellerRating.score 1)}}👍 Tích cực{{else}}👎 Tiêu cực{{/if}}</strong>
+                                    <p class="mb-0 mt-2">"{{sellerRating.comment}}"</p>
+                                    <button class="btn btn-sm btn-outline-primary mt-2" data-bs-toggle="collapse" data-bs-target="#editRating">
+                                        Chỉnh sửa đánh giá
+                                    </button>
+                                </div>
+                            {{/if}}
+
+                            <div id="editRating" class="collapse {{#if (or (and isBuyer (not hasRatedBuyer)) (and isSeller (not hasRatedSeller)))}}show{{/if}}">
+                                <form method="POST" action="/transaction/{{transaction.id}}/step4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Chọn đánh giá</label>
+                                        <div class="btn-group w-100" role="group">
+                                            <input type="radio" class="btn-check" name="score" id="positive" value="1" required
+                                                {{#if (and isBuyer hasRatedBuyer (isEqual buyerRating.score 1))}}checked{{/if}}
+                                                {{#if (and isSeller hasRatedSeller (isEqual sellerRating.score 1))}}checked{{/if}}>
+                                            <label class="btn btn-outline-success" for="positive">
+                                                <i class="bi bi-hand-thumbs-up fs-4"></i><br>Tích cực (+1)
+                                            </label>
+
+                                            <input type="radio" class="btn-check" name="score" id="negative" value="-1" required
+                                                {{#if (and isBuyer hasRatedBuyer (isEqual buyerRating.score -1))}}checked{{/if}}
+                                                {{#if (and isSeller hasRatedSeller (isEqual sellerRating.score -1))}}checked{{/if}}>
+                                            <label class="btn btn-outline-danger" for="negative">
+                                                <i class="bi bi-hand-thumbs-down fs-4"></i><br>Tiêu cực (-1)
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Nhận xét ngắn</label>
+                                        <textarea name="comment" class="form-control" rows="3" required
+                                            placeholder="Chia sẻ trải nghiệm của bạn về giao dịch này...">{{#if (and isBuyer hasRatedBuyer)}}{{buyerRating.comment}}{{/if}}{{#if (and isSeller hasRatedSeller)}}{{sellerRating.comment}}{{/if}}</textarea>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-warning w-100">
+                                        <i class="bi bi-star-fill"></i> 
+                                        {{#if (or hasRatedBuyer hasRatedSeller)}}Cập nhật{{else}}Gửi{{/if}} đánh giá
+                                    </button>
+                                </form>
+                            </div>
+
+                            {{!-- Show completion status --}}
+                            {{#if bothRated}}
+                                <div class="alert alert-success mt-3">
+                                    <i class="bi bi-check-circle-fill"></i> 
+                                    <strong>Giao dịch đã hoàn tất!</strong> Cả hai bên đã đánh giá.
+                                </div>
+                            {{else}}
+                                <div class="alert alert-info mt-3">
+                                    {{#if (and isBuyer hasRatedBuyer)}}Đang chờ người bán đánh giá...{{/if}}
+                                    {{#if (and isSeller hasRatedSeller)}}Đang chờ người mua đánh giá...{{/if}}
+                                    {{#if (and isBuyer (not hasRatedBuyer))}}Vui lòng đánh giá để hoàn tất giao dịch.{{/if}}
+                                    {{#if (and isSeller (not hasRatedSeller))}}Vui lòng đánh giá để hoàn tất giao dịch.{{/if}}
+                                </div>
+                            {{/if}}
+                        </div>
+                    </div>
+                {{/if}}
+
+                {{#if (isEqual transaction.status 5)}}
+                    {{!-- Canceled --}}
+                    <div class="alert alert-danger">
+                        <h4><i class="bi bi-x-circle-fill"></i> Giao dịch đã bị hủy</h4>
+                        <p class="mb-0">Giao dịch này đã bị người bán hủy bỏ.</p>
+                    </div>
+                {{/if}}
+
+                <!-- Cancel Button (Seller only, status < 3) -->
+                {{#if (and isSeller (lt transaction.status 3) (not (isEqual transaction.status 5)))}}
+                    <hr class="my-4">
+                    <div class="text-center">
+                        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelModal">
+                            <i class="bi bi-x-circle"></i> Hủy giao dịch
+                        </button>
+                        <p class="text-muted mt-2 small">Chỉ nên hủy khi người mua không phản hồi hoặc vi phạm thỏa thuận</p>
+                    </div>
+                {{/if}}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Confirmation Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle"></i> Hủy giao dịch</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="/transaction/{{transaction.id}}/cancel">
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn hủy giao dịch này?</p>
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Cảnh báo:</strong> Người mua sẽ nhận đánh giá -1 và không thể hoàn tác.
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Lý do hủy</label>
+                        <textarea name="reason" class="form-control" rows="3" required
+                            placeholder="VD: Người mua không thanh toán trong 24h sau khi đấu giá kết thúc"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-x-circle"></i> Xác nhận hủy
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{#section 'css'}}
+<link rel="stylesheet" href="/static/css/transaction.css">
+{{/section}}
+
+{{#section 'js'}}
+<script>
+    // Loading overlay
+    const showLoading = () => {
+        const overlay = document.createElement('div');
+        overlay.id = 'loadingOverlay';
+        overlay.innerHTML = `
+            <div class="loading-spinner">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3 text-white">Đang xử lý...</p>
+            </div>
+        `;
+        overlay.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.7); z-index: 9999; display: flex; 
+            align-items: center; justify-content: center;
+        `;
+        document.body.appendChild(overlay);
+    };
+
+    // Show loading on all form submissions
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            // Don't show loading for cancel modal (already has confirmation)
+            if (!this.closest('#cancelModal')) {
+                showLoading();
+            }
+        });
+    });
+
+    // Show success toast if redirected after successful action
+    {{#if session.successMessage}}
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification success';
+    toast.innerHTML = `
+        <i class="bi bi-check-circle-fill"></i>
+        <span>{{session.successMessage}}</span>
+    `;
+    toast.style.cssText = `
+        position: fixed; top: 20px; right: 20px; z-index: 10000;
+        background: #28a745; color: white; padding: 1rem 1.5rem;
+        border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        display: flex; align-items: center; gap: 0.5rem;
+        animation: slideIn 0.3s ease-out;
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+    {{/if}}
+
+    // Show error toast if any
+    {{#if session.errorMessage}}
+    const errorToast = document.createElement('div');
+    errorToast.className = 'toast-notification error';
+    errorToast.innerHTML = `
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <span>{{session.errorMessage}}</span>
+    `;
+    errorToast.style.cssText = `
+        position: fixed; top: 20px; right: 20px; z-index: 10000;
+        background: #dc3545; color: white; padding: 1rem 1.5rem;
+        border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        display: flex; align-items: center; gap: 0.5rem;
+        animation: slideIn 0.3s ease-out;
+    `;
+    document.body.appendChild(errorToast);
+    setTimeout(() => errorToast.remove(), 4000);
+    {{/if}}
+
+    // File input preview
+    const fileInput = document.querySelector('input[type="file"]');
+    if (fileInput) {
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const fileSize = (file.size / 1024 / 1024).toFixed(2); // MB
+                const fileType = file.type;
+                
+                // Validate file size (5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File quá lớn! Vui lòng chọn file dưới 5MB.');
+                    this.value = '';
+                    return;
+                }
+                
+                // Validate file type
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+                if (!allowedTypes.includes(fileType)) {
+                    alert('Chỉ chấp nhận file JPG, PNG hoặc PDF!');
+                    this.value = '';
+                    return;
+                }
+                
+                // Show preview info
+                const previewDiv = document.createElement('div');
+                previewDiv.className = 'alert alert-info mt-2';
+                previewDiv.innerHTML = `
+                    <i class="bi bi-file-earmark-check"></i>
+                    <strong>${file.name}</strong> (${fileSize} MB)
+                `;
+                
+                // Remove old preview if exists
+                const oldPreview = this.parentElement.querySelector('.alert');
+                if (oldPreview) oldPreview.remove();
+                
+                this.parentElement.appendChild(previewDiv);
+            }
+        });
+    }
+
+    // Initialize Bootstrap tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+
+    // Real-time validation for textareas
+    const textareas = document.querySelectorAll('textarea[minlength]');
+    textareas.forEach(textarea => {
+        const minLength = parseInt(textarea.getAttribute('minlength'));
+        const feedbackDiv = document.createElement('div');
+        feedbackDiv.className = 'invalid-feedback';
+        feedbackDiv.style.display = 'block';
+        textarea.parentElement.appendChild(feedbackDiv);
+
+        textarea.addEventListener('input', function() {
+            const currentLength = this.value.length;
+            if (currentLength > 0 && currentLength < minLength) {
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+                feedbackDiv.textContent = `Cần thêm ${minLength - currentLength} ký tự nữa (tối thiểu ${minLength} ký tự)`;
+            } else if (currentLength >= minLength) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+                feedbackDiv.textContent = '';
+            } else {
+                this.classList.remove('is-invalid', 'is-valid');
+                feedbackDiv.textContent = '';
+            }
+        });
+    });
+
+    // Enhanced cancel confirmation
+    const cancelModalBtn = document.querySelector('#cancelModal button[type="submit"]');
+    if (cancelModalBtn) {
+        const cancelForm = cancelModalBtn.closest('form');
+        cancelForm.addEventListener('submit', function(e) {
+            const reason = this.querySelector('textarea[name="reason"]').value.trim();
+            if (reason.length < 20) {
+                e.preventDefault();
+                alert('Vui lòng nhập lý do hủy giao dịch (tối thiểu 20 ký tự)');
+                return false;
+            }
+            if (!confirm('Bạn có chắc chắn muốn hủy giao dịch này? Hành động này sẽ làm giảm 1 điểm uy tín của bạn.')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    }
+
+    // Add animation keyframes
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+{{/section}}

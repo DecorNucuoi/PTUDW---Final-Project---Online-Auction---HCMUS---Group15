@@ -1,0 +1,42 @@
+<div class="card">
+    <div class="card-header bg-success text-white">
+        <h5>
+            <i class="bi bi-2-circle"></i> Bước 2: Gửi hàng
+            <i class="bi bi-info-circle ms-2" data-bs-toggle="tooltip" data-bs-placement="top" 
+               title="Xác nhận đã nhận tiền và gửi hàng cho người mua"></i>
+        </h5>
+    </div>
+    <div class="card-body">
+        <!-- Display payment info first -->
+        <div class="alert alert-info mb-3">
+            <h6>Thông tin thanh toán từ người mua:</h6>
+            <p><strong>Địa chỉ giao hàng:</strong><br>{{transaction.shipping_address}}</p>
+            <p class="mb-0">
+                <strong>Hoá đơn thanh toán:</strong> 
+                <a href="{{transaction.payment_proof}}" target="_blank" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-file-earmark-image"></i> Xem hoá đơn
+                </a>
+            </p>
+        </div>
+
+        <form method="POST" action="/transaction/{{transaction.id}}/step2">
+            <div class="mb-3">
+                <label class="form-label">Mã vận đơn / Tracking Number</label>
+                <input type="text" name="shipping_tracking" class="form-control" required
+                    placeholder="VD: VNP123456789, GHN987654321">
+                <small class="text-muted">Nhập mã theo dõi từ đơn vị vận chuyển</small>
+            </div>
+
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="confirmShip" required>
+                <label class="form-check-label" for="confirmShip">
+                    Tôi xác nhận đã nhận tiền và đã gửi hàng
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100">
+                <i class="bi bi-box-seam"></i> Xác nhận đã gửi hàng
+            </button>
+        </form>
+    </div>
+</div>

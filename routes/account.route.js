@@ -54,24 +54,75 @@ router.post('/signup',async function(req, res) {
         otp_expired: otpExpired
     };
 
-    await userService.add(newUser);
-
     const mailOptions = {
-        from: 'Auction System',
+        from: `"HỆ THỐNG ĐẤU GIÁ" <${process.env.EMAIL_USER}>`,
         to: req.body.email,
-        subject: 'Verify your account',
-        html: `<h3>Your OTP code is: <b>${otp}</b></h3>`
+        subject: '🔐 [Xác thực] Mã OTP kích hoạt tài khoản của bạn',
+        html: `
+            <div style="font-family: Arial, sans-serif; padding: 20px; border: 2px solid #0d6efd; border-radius: 8px; max-width: 600px;">
+                <div style="background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%); color: white; padding: 30px; text-align: center; border-radius: 6px 6px 0 0; margin: -20px -20px 20px -20px;">
+                    <h1 style="margin: 0; font-size: 28px;">🎉 Chào mừng bạn!</h1>
+                    <p style="margin: 10px 0 0 0; font-size: 16px;">Chào mừng đến với Hệ thống Đấu giá</p>
+                </div>
+                
+                <p>Xin chào <strong>${req.body.fullname}</strong>,</p>
+                <p>Cảm ơn bạn đã đăng ký tài khoản! Để hoàn tất quá trình đăng ký, vui lòng nhập mã OTP bên dưới:</p>
+                
+                <div style="background: linear-gradient(135deg, #6f42c1 0%, #d63384 100%); color: white; padding: 25px; text-align: center; border-radius: 8px; margin: 25px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <p style="margin: 0 0 10px 0; font-size: 14px; opacity: 0.9;">Mã OTP của bạn:</p>
+                    <h2 style="margin: 0; font-size: 42px; letter-spacing: 8px; font-family: 'Courier New', monospace;">${otp}</h2>
+                </div>
+
+                <div style="background-color: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0; border-radius: 4px;">
+                    <p style="margin: 5px 0; color: #856404;">
+                        <strong>⏰ Quan trọng:</strong> Mã này có hiệu lực trong <strong>15 phút</strong> kể từ khi nhận được email.
+                    </p>
+                </div>
+
+                <div style="background-color: #f8f9fa; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                    <p style="margin: 5px 0; font-size: 14px;"><strong>📧 Email:</strong> ${req.body.email}</p>
+                    <p style="margin: 5px 0; font-size: 14px;"><strong>👤 Họ tên:</strong> ${req.body.fullname}</p>
+                    <p style="margin: 5px 0; font-size: 14px;"><strong>📍 Địa chỉ:</strong> ${req.body.address}</p>
+                </div>
+
+                <div style="background-color: #d1ecf1; padding: 12px; border-left: 4px solid #0dcaf0; margin: 20px 0; border-radius: 4px;">
+                    <p style="margin: 0; color: #055160; font-size: 13px;">
+                        <strong>🔒 Bảo mật:</strong> Không chia sẻ mã OTP này với bất kỳ ai. Chúng tôi sẽ không bao giờ yêu cầu mã OTP qua điện thoại hoặc email.
+                    </p>
+                </div>
+
+                <hr style="margin: 30px 0; border: 1px solid #ddd;">
+                
+                <p style="font-size: 12px; color: #6c757d; line-height: 1.6;">
+                    <strong>Câu hỏi thường gặp:</strong><br>
+                    • Nếu bạn không yêu cầu đăng ký, vui lòng bỏ qua email này.<br>
+                    • Mã OTP hết hạn sau 15 phút, bạn cần đăng ký lại nếu quá thời gian.<br>
+                    • Liên hệ hỗ trợ: <a href="mailto:auctionproject01@gmail.com" style="color: #0d6efd;">auctionproject01@gmail.com</a>
+                </p>
+
+                <hr style="margin: 20px 0; border: 1px solid #ddd;">
+                
+                <p style="font-size: 11px; color: #6c757d; text-align: center; margin: 10px 0;">
+                    Email này được gửi tự động từ Hệ thống Đấu giá. Vui lòng không trả lời email này.<br>
+                    © 2025 Hệ thống Đấu giá - Tất cả quyền được bảo lưu
+                </p>
+            </div>
+        `
     };
 
-    transporter.sendMail(mailOptions, function(error, info){
-        if (error) {
-            console.log(error);
-            return res.render('vwAccount/signup', { err_message: 'Could not send OTP email.' });
-        } else {
-            console.log('Email sent: ' + info.response);
-            return res.render('vwAccount/otp', { email: req.body.email });
-        }
-    });
+    // Send email first, only save user if email is sent successfully
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log('Email sent successfully to: ' + req.body.email);
+        
+        // Only save to database after email is sent
+        await userService.add(newUser);
+        
+        return res.render('vwAccount/otp', { email: req.body.email });
+    } catch (error) {
+        console.log('Email send error:', error);
+        return res.render('vwAccount/signup', { err_message: 'Could not send OTP email. Please try again.' });
+    }
 });
 
 router.post('/otp', async function(req, res) {
@@ -79,8 +130,13 @@ router.post('/otp', async function(req, res) {
     const result = await userService.verifyOTP(email, otp);
     
     if (result) {
-        redirect('/');
-        //res.redirect('/account/login');
+        // AUTO LOGIN sau khi verify OTP thành công
+        const user = await userService.findByEmail(email);
+        req.session.isAuthenticated = true;
+        req.session.authUser = user;
+        req.session.successMessage = 'Đăng ký thành công! Chào mừng bạn đến với sàn đấu giá.';
+        
+        res.redirect('/');
     } else {
         res.render('vwAccount/otp', { email, err_message: 'Invalid OTP.' });
     }
@@ -93,7 +149,7 @@ router.get('/signin', function (req, res) {
 router.post('/signin', async function (req, res) {
     const email = req.body.email;
     const user = await userService.findByEmail(email);
-    if (!email) {
+    if (!user) {
         return res.render('vwAccount/signin', { errorMessage: 'Invalid email or password' });
     }
     const password = req.body.password;
@@ -101,6 +157,11 @@ router.post('/signin', async function (req, res) {
     if (ret === false) {
         return  res.render('vwAccount/signin', { errorMessage: 'Invalid email or password' });
     } 
+
+    if (user.is_verified === 0 || user.is_verified === false) {
+        return res.render('vwAccount/otp', { email: email, err_message: 'Please verify your email address.' });
+    }
+
     req.session.isAuthenticated = true;
     req.session.authUser = user;
     const retUrl = req.session.retUrl || '/';
@@ -299,7 +360,7 @@ router.post('/forgot-password', async function (req, res) {
     req.session.forgotEmail = email;
 
     const mailOptions = {
-        from: 'Auction System',
+        from: `"HỆ THỐNG ĐẤU GIÁ" <${process.env.EMAIL_USER}>`,
         to: email,
         subject: 'Reset Password OTP',
         html: `<h3>Your OTP for password reset is: <b>${otp}</b></h3>`
@@ -361,12 +422,18 @@ router.post('/forgot-password/reset', async function (req, res) {
         otp: null 
     });
 
+    // AUTO LOGIN sau khi reset password thành công
+    req.session.isAuthenticated = true;
+    req.session.authUser = user;
+    req.session.authUser.password = hash; // Update password in session
+
     delete req.session.forgotEmail;
     delete req.session.otpVerified;
 
-    res.render('vwAccount/signin', { 
-        success_message: 'Password reset successfully! Please login.' 
-    });
+    req.session.successMessage = 'Đặt lại mật khẩu thành công! Chào mừng bạn quay lại.';
+    
+    // Redirect về trang chủ, KHÔNG redirect về login
+    res.redirect('/');
 });
 
 router.get('/watchlist', isAuth, async function (req, res) {
@@ -443,15 +510,46 @@ router.post('/request-upgrade', isAuth, async function (req, res) {
     res.redirect('/account/profile');
 });
 
+// Main route with filter support
 router.get('/posted', isSeller, async function (req, res) {
     const sellerId = req.session.authUser.id;
-    const list = await productService.findBySeller(sellerId);
+    const filter = req.query.filter; // 'active', 'ended', or undefined (all)
+    
+    let list;
+    let pageTitle = 'Sản phẩm của tôi';
+    let filterType = 'all';
+    let currentSection = 'posted';
+    
+    if (filter === 'active') {
+        list = await productService.findBySellerWithStatus(sellerId, 1);
+        pageTitle = 'Sản phẩm đang đấu giá';
+        filterType = 'active';
+        currentSection = 'posted-active';
+    } else if (filter === 'ended') {
+        list = await productService.findBySellerWithStatus(sellerId, 2);
+        pageTitle = 'Sản phẩm đã kết thúc đấu giá';
+        filterType = 'ended';
+        currentSection = 'posted-ended';
+    } else {
+        list = await productService.findBySeller(sellerId);
+    }
 
     res.render('vwAccount/posted', {
         products: list,
         empty: list.length === 0,
-        currentSection: 'posted'
+        currentSection,
+        pageTitle,
+        filterType,
+        currentFilter: filter || 'all'
     });
+});
+
+router.get('/posted/active', isSeller, async function (req, res) {
+    res.redirect('/account/posted?filter=active');
+});
+
+router.get('/posted/ended', isSeller, async function (req, res) {
+    res.redirect('/account/posted?filter=ended');
 });
 
 export default router;
