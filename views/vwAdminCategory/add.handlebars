@@ -5,7 +5,7 @@
     </h5>
   </div>
   <div class="card-body">
-    <form method="post" action="">
+    <form method="post" action="" id="frmAddCategory">
       
       <div class="mb-3">
         <label for="txtName" class="form-label fw-bold">Tên danh mục</label>
@@ -27,6 +27,27 @@
         </div>
       </div>
 
+      <!-- Subcategories Section (only shown when creating root category) -->
+      <div class="mb-3" id="subcategoriesSection" style="display: none;">
+        <label class="form-label fw-bold">Danh mục con <span class="text-danger">*</span></label>
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle me-2"></i>
+          Bạn phải thêm ít nhất một danh mục con khi tạo danh mục gốc
+        </div>
+        <div id="subcategoriesList">
+          <div class="input-group mb-2">
+            <input type="text" class="form-control" name="subcategories[]" 
+                   placeholder="Tên danh mục con...">
+            <button type="button" class="btn btn-danger" onclick="removeSubcategory(this)" disabled>
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-success" onclick="addSubcategory()">
+          <i class="bi bi-plus-circle me-1"></i> Thêm danh mục con
+        </button>
+      </div>
+
       <div class="mt-4 d-flex justify-content-between">
         <a class="btn btn-outline-secondary" href="/admin/categories" role="button">
           <i class="bi bi-arrow-left"></i> Quay lại
@@ -38,3 +59,94 @@
     </form>
   </div>
 </div>
+
+<script>
+  // Show/hide subcategories section based on parent selection
+  const parentSelect = document.getElementById('selParent');
+  const subcategoriesSection = document.getElementById('subcategoriesSection');
+  
+  function toggleSubcategoriesSection() {
+    if (parentSelect.value === '') {
+      // Root category - show subcategories section
+      subcategoriesSection.style.display = 'block';
+      // Add required attribute to all subcategory inputs
+      const subcatInputs = document.querySelectorAll('input[name="subcategories[]"]');
+      subcatInputs.forEach(input => input.setAttribute('required', 'required'));
+    } else {
+      // Child category - hide subcategories section
+      subcategoriesSection.style.display = 'none';
+      // Remove required from subcategory inputs
+      const subcatInputs = document.querySelectorAll('input[name="subcategories[]"]');
+      subcatInputs.forEach(input => input.removeAttribute('required'));
+    }
+  }
+  
+  parentSelect.addEventListener('change', toggleSubcategoriesSection);
+  
+  // Check initial state on page load
+  toggleSubcategoriesSection();
+  
+  // Add new subcategory input
+  function addSubcategory() {
+    const subcategoriesList = document.getElementById('subcategoriesList');
+    const newInput = document.createElement('div');
+    newInput.className = 'input-group mb-2';
+    newInput.innerHTML = `
+      <input type="text" class="form-control" name="subcategories[]" 
+             placeholder="Tên danh mục con..." required>
+      <button type="button" class="btn btn-danger" onclick="removeSubcategory(this)">
+        <i class="bi bi-trash"></i>
+      </button>
+    `;
+    subcategoriesList.appendChild(newInput);
+    updateRemoveButtons();
+  }
+  
+  // Remove subcategory input
+  function removeSubcategory(button) {
+    const inputGroup = button.closest('.input-group');
+    inputGroup.remove();
+    updateRemoveButtons();
+  }
+  
+  // Update remove button state (disable if only one subcategory)
+  function updateRemoveButtons() {
+    const subcatInputs = document.querySelectorAll('input[name="subcategories[]"]');
+    const removeButtons = document.querySelectorAll('#subcategoriesList .btn-danger');
+    
+    if (subcatInputs.length === 1) {
+      removeButtons[0].setAttribute('disabled', 'disabled');
+    } else {
+      removeButtons.forEach(btn => btn.removeAttribute('disabled'));
+    }
+  }
+  
+  // Form validation
+  document.getElementById('frmAddCategory').addEventListener('submit', function(e) {
+    const parentId = document.getElementById('selParent').value;
+    const subcatInputs = document.querySelectorAll('input[name="subcategories[]"]');
+    
+    // If creating root category, check if at least one subcategory exists
+    if (parentId === '' && subcatInputs.length === 0) {
+      e.preventDefault();
+      alert('Bạn phải thêm ít nhất một danh mục con khi tạo danh mục gốc!');
+      return false;
+    }
+    
+    // Check if all subcategory names are filled
+    if (parentId === '') {
+      let hasEmpty = false;
+      subcatInputs.forEach(input => {
+        if (input.value.trim() === '') {
+          hasEmpty = true;
+        }
+      });
+      
+      if (hasEmpty) {
+        e.preventDefault();
+        alert('Vui lòng điền đầy đủ tên cho tất cả danh mục con!');
+        return false;
+      }
+    }
+  });
+</script>

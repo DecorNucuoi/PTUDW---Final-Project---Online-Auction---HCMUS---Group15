@@ -1,6 +1,7 @@
 // routes/admin.route.js
 import express from 'express';
 import db from '../utils/db.js';
+import { getCacheStats, clearAllCaches, getAllCacheKeys } from '../utils/cache.js';
 
 const router = express.Router();
 
@@ -118,5 +119,82 @@ async function getSystemStats() {
         recentBids: recentBids
     };
 }
+
+/**
+ * GET /admin/cache-stats
+ * View cache statistics
+ */
+router.get('/cache-stats', function (req, res) {
+    try {
+        const stats = getCacheStats();
+        const keys = getAllCacheKeys();
+        
+        res.json({
+            success: true,
+            statistics: stats,
+            keys: keys,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Error getting cache stats:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to get cache statistics',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * GET /admin/cache-stats
+ * Display cache statistics
+ */
+router.get('/cache-stats', function (req, res) {
+    try {
+        const stats = getCacheStats();
+        
+        // Calculate hit rates
+        const hitRate = {
+            short: stats.short.hits + stats.short.misses > 0 
+                ? ((stats.short.hits / (stats.short.hits + stats.short.misses)) * 100).toFixed(2)
+                : 0,
+            medium: stats.medium.hits + stats.medium.misses > 0
+                ? ((stats.medium.hits / (stats.medium.hits + stats.medium.misses)) * 100).toFixed(2)
+                : 0,
+            long: stats.long.hits + stats.long.misses > 0
+                ? ((stats.long.hits / (stats.long.hits + stats.long.misses)) * 100).toFixed(2)
+                : 0
+        };
+
+        // Get all cache keys
+        const cacheKeys = getAllCacheKeys();
+        
+        res.render('vwAdmin/cache-stats', {
+            stats,
+            hitRate,
+            cacheKeys,
+            adminUser: req.session.authUser
+        });
+    } catch (error) {
+        console.error('Error loading cache stats:', error);
+        res.status(500).send('Lỗi khi tải cache statistics');
+    }
+});
+
+/**
+ * POST /admin/clear-cache
+ * Clear all caches
+ */
+router.post('/clear-cache', function (req, res) {
+    try {
+        clearAllCaches();
+        req.session.successMessage = 'All caches cleared successfully';
+        res.redirect('/admin/cache-stats');
+    } catch (error) {
+        console.error('Error clearing cache:', error);
+        req.session.errorMessage = 'Failed to clear caches';
+        res.redirect('/admin/cache-stats');
+    }
+});
 
 export default router;

@@ -9,7 +9,7 @@ export function findById(id) {
 }
 
 export function add(entity) {
-  return db('categories').insert(entity);
+  return db('categories').insert(entity).returning('id');
 }
 
 export function del(id) {

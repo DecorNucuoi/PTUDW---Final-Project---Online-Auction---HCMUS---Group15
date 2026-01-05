@@ -16,7 +16,7 @@
                             {{#each products}}
                             <div class="col-md-4">
                                 <div class="card h-100">
-                                    <img src="{{#if imagePath}}{{imagePath}}{{else}}/static/imgs/sp/{{id}}/main_thumbs.jpg{{/if}}" class="card-img-top" style="height:150px; object-fit:cover">
+                                    <img src="{{#if imagePath}}{{imagePath}}{{else}}/static/imgs/sp/{{id}}/main_thumbs.jpg{{/if}}" class="card-img-top" style="height:150px; object-fit:cover" loading="lazy" width="100%" height="150">
                                     <div class="card-body">
                                         <h6 class="card-title text-truncate">{{name}}</h6>
                                         <div class="text-danger fw-bold">{{format_currency current_price}}</div>

@@ -182,6 +182,23 @@
                         </div>
                     </div>
 
+                    <!-- Sort Options -->
+                    <div class="filter-section">
+                        <h6 class="filter-title">
+                            <i class="bi bi-sort-down"></i>Sort By
+                        </h6>
+                        <div class="px-3">
+                            <select class="form-select form-select-sm" id="sortSelect">
+                                <option value="relevance" {{#if (eq sort 'relevance')}}selected{{/if}}>Most Relevant</option>
+                                <option value="time_desc" {{#if (eq sort 'time_desc')}}selected{{/if}}>Newest First</option>
+                                <option value="ending_soon" {{#if (eq sort 'ending_soon')}}selected{{/if}}>Ending Soon</option>
+                                <option value="price_desc" {{#if (eq sort 'price_desc')}}selected{{/if}}>Price: High to Low</option>
+                                <option value="price_asc" {{#if (eq sort 'price_asc')}}selected{{/if}}>Price: Low to High</option>
+                                <option value="most_bids" {{#if (eq sort 'most_bids')}}selected{{/if}}>Most Bids</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <!-- Categories Filter -->
                     <div class="filter-section">
                         <h6 class="filter-title">
@@ -217,24 +234,69 @@
                                         id="maxPrice">
                                 </div>
                             </div>
-                            <button class="btn btn-outline-primary btn-sm w-100 mt-2" id="applyPriceFilter">
-                                Apply Filter
-                            </button>
                         </div>
                     </div>
 
-                    <!-- Sort Options -->
+                    <!-- Bids Count Filter -->
                     <div class="filter-section">
                         <h6 class="filter-title">
-                            <i class="bi bi-sort-down"></i>Sort By
+                            <i class="bi bi-hammer"></i>Number of Bids
                         </h6>
                         <div class="px-3">
-                            <select class="form-select form-select-sm" id="sortSelect">
-                                <option value="time_desc">Newest First</option>
-                                <option value="time_asc">Ending Soon</option>
-                                <option value="price_desc">Price: High to Low</option>
-                                <option value="price_asc">Price: Low to High</option>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="number" class="form-control form-control-sm" placeholder="Min"
+                                        id="minBids" min="0">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" class="form-control form-control-sm" placeholder="Max"
+                                        id="maxBids" min="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ending Soon Filter -->
+                    <div class="filter-section">
+                        <h6 class="filter-title">
+                            <i class="bi bi-clock-history"></i>Ending Soon
+                        </h6>
+                        <div class="px-3">
+                            <select class="form-select form-select-sm" id="endingSoonFilter">
+                                <option value="">All Auctions</option>
+                                <option value="1">Ending in 1 hour</option>
+                                <option value="3">Ending in 3 hours</option>
+                                <option value="6">Ending in 6 hours</option>
+                                <option value="12">Ending in 12 hours</option>
+                                <option value="24">Ending in 24 hours</option>
                             </select>
+                        </div>
+                    </div>
+
+                    <!-- Seller Rating Filter -->
+                    <div class="filter-section">
+                        <h6 class="filter-title">
+                            <i class="bi bi-star"></i>Seller Rating
+                        </h6>
+                        <div class="px-3">
+                            <select class="form-select form-select-sm" id="sellerRatingFilter">
+                                <option value="">All Sellers</option>
+                                <option value="90">90%+ Positive</option>
+                                <option value="80">80%+ Positive</option>
+                                <option value="70">70%+ Positive</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Apply All Filters Button -->
+                    <div class="filter-section">
+                        <div class="px-3">
+                            <button class="btn btn-primary w-100 mb-2" id="applyAllFilters">
+                                <i class="bi bi-funnel"></i> Apply Filters
+                            </button>
+                            <button class="btn btn-outline-secondary w-100" id="clearAllFilters">
+                                <i class="bi bi-x-circle"></i> Clear All
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -292,7 +354,15 @@
 
 {{#section 'js'}}
 <script>
-    const currentKeyword = "{{keyword}}";
+    let currentKeyword = "{{keyword}}";
+    let currentSort = "{{sort}}" || "relevance";
+    let currentCatId = 0;
+    let currentMinPrice = null;
+    let currentMaxPrice = null;
+    let currentMinBids = null;
+    let currentMaxBids = null;
+    let currentEndingSoon = null;
+    let currentMinSellerRating = null;
 
     function formatCurrency(amount) {
         return new Intl.NumberFormat('en-US').format(amount);
@@ -312,55 +382,107 @@
     }
 
     function searchProducts(page) {
-        const sort = $('#sortSelect').val();
+        const sort = document.getElementById('sortSelect').value;
+        currentSort = sort;
+        console.log('[search] searchProducts called - keyword:', currentKeyword, 'page:', page, 'sort:', sort);
 
-        $('#loading').show();
-        $('#search-container').css('opacity', '0.5');
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('search-container').style.opacity = '0.5';
+        
+        // Build query parameters with all filters
+        const params = new URLSearchParams({
+            page: page,
+            sort: sort
+        });
+        
+        if (currentKeyword) params.append('q', currentKeyword);
+        if (currentCatId > 0) params.append('catId', currentCatId);
+        if (currentMinPrice) params.append('minPrice', currentMinPrice);
+        if (currentMaxPrice) params.append('maxPrice', currentMaxPrice);
+        if (currentMinBids) params.append('minBids', currentMinBids);
+        if (currentMaxBids) params.append('maxBids', currentMaxBids);
+        if (currentEndingSoon) params.append('endingSoon', currentEndingSoon);
+        if (currentMinSellerRating) params.append('minSellerRating', currentMinSellerRating);
+        
+        const apiUrl = `/products/api/search?${params.toString()}`;
+        console.log('[search] Fetching:', apiUrl);
 
-        $.getJSON(`/products/api/search?q=${currentKeyword}&page=${page}&sort=${sort}`, function (data) {
-            $('#loading').hide();
-            $('#search-container').css('opacity', '1').empty();
+        fetch(apiUrl)
+            .then(response => {
+                console.log('[search] Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('[search] Data received:', data);
+                document.getElementById('loading').style.display = 'none';
+                const container = document.getElementById('search-container');
+                container.style.opacity = '1';
+                container.innerHTML = '';
 
-            if (data.products.length === 0) {
-                $('#search-container').html('<div class="col-12 text-center py-5 text-muted">No items found matching your search.</div>');
-                return;
-            }
+                if (data.products.length === 0) {
+                    container.innerHTML = '<div class="col-12 text-center py-5 text-muted">No items found matching your search.</div>';
+                    return;
+                }
 
-            const html = data.products.map(p => `
-                <div class="col">
-                     <div class="card-product h-100 ${p.isNew ? 'is-new' : ''}">
-                        <div class="card-img-container">
-                            <a href="/products/detail/${p.id}">
-                                <img src="${p.imagePath}" alt="${p.name}">
-                            </a>
-                            <button class="btn btn-watchlist position-absolute bottom-0 end-0 m-2 rounded-circle shadow-sm" 
-                                    style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; z-index: 10;"
-                                    data-id="${p.id}">
-                                <i class="bi bi-heart" style="font-size: 0.9rem"></i>
-                            </button>
-                        </div>
-                        <div class="card-body">
-                            <div class="meta-text mb-1">Lot ${p.id}</div>
-                            <a href="/products/detail/${p.id}">
-                                <h6 class="card-title">${p.name}</h6>
-                            </a>
-                            <div class="d-flex justify-content-between align-items-end mt-2">
-                                <div>
-                                    <div class="meta-text" style="font-size: 0.7rem;">Current Bid</div>
-                                    <div class="price-current">${formatCurrency(p.current_price)}</div>
-                                </div>
-                                <div class="time-remaining text-end">
-                                    <i class="bi bi-clock me-1"></i>${formatTimeLeft(p.end_time)}
+                const html = data.products.map(p => `
+                    <div class="col">
+                        <div class="card-product h-100 ${p.isNew ? 'is-new' : ''}">
+                            <div class="card-img-container">
+                                <a href="/products/detail/${p.id}">
+                                    <picture>
+                                        <source srcset="${p.imagePath}" type="image/webp">
+                                        <img src="${p.imagePath}" alt="${p.name}" loading="lazy" width="200" height="200">
+                                    </picture>
+                                </a>
+                                <button class="btn btn-watchlist position-absolute bottom-0 end-0 m-2 rounded-circle shadow-sm" 
+                                        style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; z-index: 10;"
+                                        data-id="${p.id}">
+                                    <i class="bi bi-heart" style="font-size: 0.9rem"></i>
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="meta-text mb-1">Lot ${p.id}</div>
+                                <a href="/products/detail/${p.id}">
+                                    <h6 class="card-title">${p.name}</h6>
+                                </a>
+                                <div class="d-flex justify-content-between align-items-end mt-2">
+                                    <div>
+                                        <div class="meta-text" style="font-size: 0.7rem;">Current Bid</div>
+                                        <div class="price-current">${formatCurrency(p.current_price)}</div>
+                                    </div>
+                                    <div class="time-remaining text-end">
+                                        <i class="bi bi-clock me-1"></i>${formatTimeLeft(p.end_time)}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `).join('');
 
-            $('#search-container').html(html);
-            renderPagination(data.currentPage, data.totalPages);
-        });
+                container.innerHTML = html;
+                
+                // Update results info
+                const resultsInfo = document.getElementById('results-info');
+                if (resultsInfo) {
+                    const total = data.total || 0;
+                    let infoText = `${total} result${total !== 1 ? 's' : ''}`;
+                    if (currentKeyword) {
+                        infoText += ` for "<span class="search-query">${currentKeyword}</span>"`;
+                    }
+                    resultsInfo.innerHTML = infoText;
+                }
+                
+                renderPagination(data.currentPage, data.totalPages);
+            })
+            .catch(error => {
+                console.error('[search] Error:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('search-container').style.opacity = '1';
+                document.getElementById('search-container').innerHTML = '<div class="col-12 text-center py-5 text-danger">Error: ' + error.message + '</div>';
+            });
     }
 
     function renderPagination(current, total) {
@@ -377,10 +499,34 @@
             </a>
         </li>`;
 
+        // Smart pagination: show first, last, current and 2 pages around current
+        const delta = 2; // Show 2 pages before and after current
+        const range = [];
+        const rangeWithDots = [];
+        
         for (let i = 1; i <= total; i++) {
-            const active = i === current ? 'active' : '';
-            html += `<li class="page-item ${active}"><a class="page-link" href="javascript:searchProducts(${i})">${i}</a></li>`;
+            if (i === 1 || i === total || (i >= current - delta && i <= current + delta)) {
+                range.push(i);
+            }
         }
+
+        let prev = 0;
+        for (const i of range) {
+            if (prev && i - prev > 1) {
+                rangeWithDots.push('...');
+            }
+            rangeWithDots.push(i);
+            prev = i;
+        }
+
+        rangeWithDots.forEach(page => {
+            if (page === '...') {
+                html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            } else {
+                const active = page === current ? 'active' : '';
+                html += `<li class="page-item ${active}"><a class="page-link" href="javascript:searchProducts(${page})">${page}</a></li>`;
+            }
+        });
 
         html += `
         <li class="page-item ${nextDisabled}">
@@ -389,11 +535,11 @@
             </a>
         </li>`;
 
-        $('#pagination-container').html(html);
+        document.getElementById('pagination-container').innerHTML = html;
     }
 
     function performNewSearch() {
-        const newKeyword = $('#searchInput').val().trim();
+        const newKeyword = document.getElementById('searchInput').value.trim();
         if (newKeyword !== currentKeyword) {
             currentKeyword = newKeyword;
             // Update URL without reload
@@ -405,58 +551,69 @@
     }
 
     // Enhanced functionality
-    $(document).ready(function () {
-        if (currentKeyword) {
-            searchProducts(1);
-        }
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('[search] Page loaded with keyword:', currentKeyword);
+        
+        // Always load products on page load
+        searchProducts(1);
 
         // New search functionality
-        $('#newSearchBtn').on('click', performNewSearch);
-        $('#searchInput').on('keyup', function (e) {
+        document.getElementById('newSearchBtn').addEventListener('click', performNewSearch);
+        document.getElementById('searchInput').addEventListener('keyup', function (e) {
             if (e.key === 'Enter') {
                 performNewSearch();
             }
         });
 
         // Category filter
-        $('.category-option').on('click', function (e) {
-            e.preventDefault();
-            $('.category-option').removeClass('active');
-            $(this).addClass('active');
-            const catId = parseInt($(this).data('cat-id'));
-
-            // Update search with category filter
-            let params = `catId=${catId}&sort=${$('#sortSelect').val()}&page=1`;
-            if (currentKeyword) params += `&q=${encodeURIComponent(currentKeyword)}`;
-
-            $.getJSON(`/products/api/search?${params}`, function (data) {
-                updateResults(data);
+        document.querySelectorAll('.category-option').forEach(option => {
+            option.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelectorAll('.category-option').forEach(el => el.classList.remove('active'));
+                this.classList.add('active');
+                currentCatId = parseInt(this.dataset.catId);
+                searchProducts(1);
             });
         });
 
         // Sort change
-        $('#sortSelect').on('change', function () {
+        document.getElementById('sortSelect').addEventListener('change', function () {
             searchProducts(1);
         });
 
-        // Price filter
-        $('#applyPriceFilter').on('click', function () {
-            const minPrice = $('#minPrice').val();
-            const maxPrice = $('#maxPrice').val();
+        // Apply all filters button
+        document.getElementById('applyAllFilters').addEventListener('click', function () {
+            currentMinPrice = document.getElementById('minPrice').value || null;
+            currentMaxPrice = document.getElementById('maxPrice').value || null;
+            currentMinBids = document.getElementById('minBids').value || null;
+            currentMaxBids = document.getElementById('maxBids').value || null;
+            currentEndingSoon = document.getElementById('endingSoonFilter').value || null;
+            currentMinSellerRating = document.getElementById('sellerRatingFilter').value || null;
+            searchProducts(1);
+        });
 
-            let params = `sort=${$('#sortSelect').val()}&page=1`;
-            if (currentKeyword) params += `&q=${encodeURIComponent(currentKeyword)}`;
-            if (minPrice) params += `&minPrice=${minPrice}`;
-            if (maxPrice) params += `&maxPrice=${maxPrice}`;
-
-            $.getJSON(`/products/api/search?${params}`, function (data) {
-                updateResults(data);
-            });
+        // Clear all filters button
+        document.getElementById('clearAllFilters').addEventListener('click', function () {
+            document.getElementById('minPrice').value = '';
+            document.getElementById('maxPrice').value = '';
+            document.getElementById('minBids').value = '';
+            document.getElementById('maxBids').value = '';
+            document.getElementById('endingSoonFilter').value = '';
+            document.getElementById('sellerRatingFilter').value = '';
+            
+            currentMinPrice = null;
+            currentMaxPrice = null;
+            currentMinBids = null;
+            currentMaxBids = null;
+            currentEndingSoon = null;
+            currentMinSellerRating = null;
+            
+            searchProducts(1);
         });
     });
 
     function updateResults(data) {
-        $('#loading').hide();
+        document.getElementById('loading').style.display = 'none';
 
         // Update results info
         const total = data.total || 0;
@@ -466,16 +623,16 @@
         } else {
             resultsText = `Showing ${data.products.length} of ${total} products`;
         }
-        $('#results-info').html(resultsText);
+        document.getElementById('results-info').innerHTML = resultsText;
 
         if (data.products.length === 0) {
-            $('#empty-state').show();
-            $('#search-container').hide();
-            $('#pagination-container').empty();
+            document.getElementById('empty-state').style.display = 'block';
+            document.getElementById('search-container').style.display = 'none';
+            document.getElementById('pagination-container').innerHTML = '';
             return;
         }
 
-        $('#empty-state').hide();
+        document.getElementById('empty-state').style.display = 'none';
         const html = data.products.map(p => `
             <div class="col">
                 <div class="card-product h-100">
@@ -509,7 +666,9 @@
             </div>
         `).join('');
 
-        $('#search-container').html(html).show();
+        const container = document.getElementById('search-container');
+        container.innerHTML = html;
+        container.style.display = '';
         renderPagination(data.currentPage, data.totalPages);
     }
 </script>

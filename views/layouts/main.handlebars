@@ -10,9 +10,21 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Bootstrap 5 -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Bootstrap 5 - Preload for async loading -->
+    <link rel="preload" 
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" 
+          as="style" 
+          onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" 
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" 
+          as="style" 
+          onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- Fallback for browsers without JS -->
+    <noscript>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    </noscript>
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/static/css/style.css">
@@ -223,10 +235,10 @@
                         <form method="post" action="/account/signout" id="frmSignOut"></form>
                     {{else}}
                         <li class="nav-item">
-                            <a class="nav-link" href="/account/signin" style="color: var(--text-primary); font-weight: var(--font-weight-medium);">Sign In</a>
+                            <a class="nav-link signin-link" href="/account/signin" style="color: var(--text-primary); font-weight: var(--font-weight-medium);">Sign In</a>
                         </li>
                         <li class="nav-item">
-                            <a class="btn ms-2" href="/account/signup" style="background: var(--gradient-primary); border: none; color: var(--primary-white); font-weight: var(--font-weight-semibold); border-radius: 12px; padding: 0.75rem 1.5rem; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: var(--shadow-md); letter-spacing: 0.025em;" onmouseover="this.style.background='linear-gradient(135deg, #3730A3 0%, #4338CA 100%)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(79, 70, 229, 0.4)'" onmouseout="this.style.background='var(--gradient-primary)'; this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-md)'">Register</a>
+                            <a class="btn ms-2 signup-link" href="/account/signup" style="background: var(--gradient-primary); border: none; color: var(--primary-white); font-weight: var(--font-weight-semibold); border-radius: 12px; padding: 0.75rem 1.5rem; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: var(--shadow-md); letter-spacing: 0.025em;" onmouseover="this.style.background='linear-gradient(135deg, #3730A3 0%, #4338CA 100%)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(79, 70, 229, 0.4)'" onmouseout="this.style.background='var(--gradient-primary)'; this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-md)'">Register</a>
                         </li>
                     {{/if}}
                 </ul>
@@ -368,7 +380,6 @@
         </div>
     </footer>
 
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
@@ -729,7 +740,7 @@
             width: 85%;
         }
         
-        /* === MODERN MEGA MENU === */
+        /* === MODERN MEGA MENU - OPTIMIZED === */
         .mega-menu {
             position: fixed !important;
             top: auto !important;
@@ -737,7 +748,8 @@
             right: 0 !important;
             width: 100vw !important;
             background: rgba(255, 255, 255, 0.98) !important;
-            backdrop-filter: blur(40px) saturate(180%) !important;
+            backdrop-filter: blur(8px) saturate(150%) !important;
+            -webkit-backdrop-filter: blur(8px) saturate(150%) !important;
             border: none !important;
             border-top: 1px solid var(--border-light) !important;
             border-bottom: 1px solid var(--border-light) !important;
@@ -747,10 +759,12 @@
             display: none !important;
             opacity: 0 !important;
             visibility: hidden !important;
-            transition: opacity 0.2s ease, visibility 0.2s ease !important;
+            transition: opacity 0.15s ease, visibility 0.15s ease !important;
             overflow-x: hidden !important;
             overflow-y: auto !important;
             max-height: 80vh !important;
+            will-change: opacity, visibility;
+            transform: translateZ(0);
         }
         
         /* Center mega menu content */
@@ -840,12 +854,12 @@
             width: 100%;
             height: 100%;
             background: linear-gradient(90deg, transparent, rgba(0, 89, 179, 0.1), transparent);
-            transition: left 0.5s ease;
+            transition: left 0.3s ease;
         }
         
         .mega-menu a:hover {
             color: var(--accent-blue) !important;
-            transform: translateX(4px);
+            transform: translateX(2px);
         }
         
         .mega-menu a:hover::before {
@@ -855,7 +869,7 @@
         @keyframes megaMenuSlideIn {
             from {
                 opacity: 0;
-                transform: translateY(-10px);
+                transform: translateY(-5px);
             }
             to {
                 opacity: 1;
@@ -892,6 +906,8 @@
             .mega-menu {
                 width: 90vw !important;
                 border-radius: 12px !important;
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
             }
             
             .search-bar {
@@ -1049,82 +1065,83 @@
     
     <script>
         // Enhanced mega menu with proper hover intent
-        $(document).ready(function() {
+        document.addEventListener('DOMContentLoaded', function() {
             let hoverIntentTimer = null;
             let hideTimer = null;
             const HOVER_INTENT_DELAY = 200; // ms to wait before showing
             const HIDE_DELAY = 300; // ms to wait before hiding
             
-            $('.category-item').on('mouseenter', function() {
-                const $item = $(this);
-                const $menu = $item.find('.mega-menu');
-                
-                // Clear any pending hide timer
-                if (hideTimer) {
-                    clearTimeout(hideTimer);
-                    hideTimer = null;
-                }
-                
-                // Only proceed if this item has a mega menu
-                if ($menu.length === 0) return;
-                
-                // Clear any pending show timer
-                if (hoverIntentTimer) {
-                    clearTimeout(hoverIntentTimer);
-                }
-                
-                // Set hover intent timer
-                hoverIntentTimer = setTimeout(() => {
-                    // Remove active class from all items
-                    $('.category-item').removeClass('menu-active');
+            document.querySelectorAll('.category-item').forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    const menu = this.querySelector('.mega-menu');
                     
-                    // Add active class to current item
-                    $item.addClass('menu-active');
-                    
-                    hoverIntentTimer = null;
-                }, HOVER_INTENT_DELAY);
-            });
-            
-            $('.category-item').on('mouseleave', function() {
-                const $item = $(this);
-                
-                // Clear hover intent timer if still pending
-                if (hoverIntentTimer) {
-                    clearTimeout(hoverIntentTimer);
-                    hoverIntentTimer = null;
-                }
-                
-                // Set hide delay timer
-                hideTimer = setTimeout(() => {
-                    // Check if mouse is over the menu itself
-                    const $menu = $item.find('.mega-menu');
-                    if (!$menu.is(':hover')) {
-                        $item.removeClass('menu-active');
+                    // Clear any pending hide timer
+                    if (hideTimer) {
+                        clearTimeout(hideTimer);
+                        hideTimer = null;
                     }
-                    hideTimer = null;
-                }, HIDE_DELAY);
+                    
+                    // Only proceed if this item has a mega menu
+                    if (!menu) return;
+                    
+                    // Clear any pending show timer
+                    if (hoverIntentTimer) {
+                        clearTimeout(hoverIntentTimer);
+                    }
+                    
+                    // Set hover intent timer
+                    hoverIntentTimer = setTimeout(() => {
+                        // Remove active class from all items
+                        document.querySelectorAll('.category-item').forEach(el => el.classList.remove('menu-active'));
+                        
+                        // Add active class to current item
+                        item.classList.add('menu-active');
+                        
+                        hoverIntentTimer = null;
+                    }, HOVER_INTENT_DELAY);
+                });
+                
+                item.addEventListener('mouseleave', function() {
+                    // Clear hover intent timer if still pending
+                    if (hoverIntentTimer) {
+                        clearTimeout(hoverIntentTimer);
+                        hoverIntentTimer = null;
+                    }
+                    
+                    // Set hide delay timer
+                    hideTimer = setTimeout(() => {
+                        // Check if mouse is over the menu itself
+                        const menu = item.querySelector('.mega-menu');
+                        if (menu && !menu.matches(':hover')) {
+                            item.classList.remove('menu-active');
+                        }
+                        hideTimer = null;
+                    }, HIDE_DELAY);
+                });
             });
             
             // Keep menu visible when hovering over it
-            $('.mega-menu').on('mouseenter', function() {
-                if (hideTimer) {
-                    clearTimeout(hideTimer);
-                    hideTimer = null;
-                }
-            });
-            
-            // Hide menu when leaving it
-            $('.mega-menu').on('mouseleave', function() {
-                const $item = $(this).closest('.category-item');
+            document.querySelectorAll('.mega-menu').forEach(menu => {
+                menu.addEventListener('mouseenter', function() {
+                    if (hideTimer) {
+                        clearTimeout(hideTimer);
+                        hideTimer = null;
+                    }
+                });
                 
-                hideTimer = setTimeout(() => {
-                    $item.removeClass('menu-active');
-                    hideTimer = null;
-                }, HIDE_DELAY);
+                // Hide menu when leaving it
+                menu.addEventListener('mouseleave', function() {
+                    const item = this.closest('.category-item');
+                    
+                    hideTimer = setTimeout(() => {
+                        item.classList.remove('menu-active');
+                        hideTimer = null;
+                    }, HIDE_DELAY);
+                });
             });
             
             // Clear timers on page unload
-            $(window).on('beforeunload', function() {
+            window.addEventListener('beforeunload', function() {
                 if (hoverIntentTimer) clearTimeout(hoverIntentTimer);
                 if (hideTimer) clearTimeout(hideTimer);
             });
@@ -1188,45 +1205,57 @@
         });
         
         // Global Watchlist Logic
-        $(document).on('click', '.btn-watchlist', function(e) {
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('.btn-watchlist');
+            if (!btn) return;
+            
             e.preventDefault();
             e.stopPropagation();
 
-            const btn = $(this);
-            const icon = btn.find('i');
-            const productId = btn.data('id');
+            const icon = btn.querySelector('i');
+            const productId = btn.dataset.id;
 
-            btn.prop('disabled', true);
+            btn.disabled = true;
 
-            $.ajax({
-                url: '/watchlist/api/add',
+            fetch('/watchlist/api/add', {
                 method: 'POST',
-                data: { id: productId },
-                success: function(response) {
-                    btn.prop('disabled', false);
-                    if (response.action === 'added') {
-                        icon.removeClass('bi-heart').addClass('bi-heart-fill');
-                    } else {
-                        icon.removeClass('bi-heart-fill').addClass('bi-heart');
-                    }
-                    
-                    // Hiển thị toast notification
-                    if (response.message) {
-                        showToast(response.message, 'success');
-                    }
+                headers: {
+                    'Content-Type': 'application/json',
                 },
-                error: function(xhr) {
-                    btn.prop('disabled', false);
-                    if (xhr.status === 401) {
-                        const errorMsg = xhr.responseJSON?.message || 'Vui lòng đăng nhập để sử dụng tính năng này!';
-                        showToast(errorMsg, 'warning');
-                        setTimeout(() => {
-                            window.location.href = `/account/signin?retUrl=${encodeURIComponent(window.location.pathname + window.location.search)}`;
-                        }, 1500);
-                    } else {
-                        const errorMsg = xhr.responseJSON?.message || 'Lỗi khi cập nhật watchlist';
-                        showToast(errorMsg, 'error');
-                    }
+                body: JSON.stringify({ id: productId })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => Promise.reject({ status: response.status, data: err }));
+                }
+                return response.json();
+            })
+            .then(response => {
+                btn.disabled = false;
+                if (response.action === 'added') {
+                    icon.classList.remove('bi-heart');
+                    icon.classList.add('bi-heart-fill');
+                } else {
+                    icon.classList.remove('bi-heart-fill');
+                    icon.classList.add('bi-heart');
+                }
+                
+                // Hiển thị toast notification
+                if (response.message) {
+                    showToast(response.message, 'success');
+                }
+            })
+            .catch(error => {
+                btn.disabled = false;
+                if (error.status === 401) {
+                    const errorMsg = error.data?.message || 'Vui lòng đăng nhập để sử dụng tính năng này!';
+                    showToast(errorMsg, 'warning');
+                    setTimeout(() => {
+                        window.location.href = `/account/signin?retUrl=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+                    }, 1500);
+                } else {
+                    const errorMsg = error.data?.message || 'Lỗi khi cập nhật watchlist';
+                    showToast(errorMsg, 'error');
                 }
             });
         });
@@ -1258,6 +1287,31 @@
         showToast('{{err_message}}', 'error');
     </script>
     {{/if}}
+    
+    <!-- Add current URL to signin/signup links -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentUrl = encodeURIComponent(window.location.pathname + window.location.search);
+            
+            // Update all signin links
+            const signinLinks = document.querySelectorAll('a[href="/account/signin"], a.signin-link, a.signin-qa-link, a.login-btn');
+            signinLinks.forEach(link => {
+                if (!link.href.includes('retUrl=')) {
+                    const separator = link.href.includes('?') ? '&' : '?';
+                    link.href = link.href + `${separator}retUrl=${currentUrl}`;
+                }
+            });
+            
+            // Update all signup links
+            const signupLinks = document.querySelectorAll('a[href="/account/signup"], a.signup-link');
+            signupLinks.forEach(link => {
+                if (!link.href.includes('retUrl=')) {
+                    const separator = link.href.includes('?') ? '&' : '?';
+                    link.href = link.href + `${separator}retUrl=${currentUrl}`;
+                }
+            });
+        });
+    </script>
     
     {{{_sections.js}}}
 </body>
