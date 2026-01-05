@@ -1,6 +1,7 @@
 import express from "express";
 import * as categoryService from "../services/category.service.js";
 import { redirectWithSuccess, redirectWithError } from "../utils/redirect.js";
+import { cacheInvalidationHandlers } from "../utils/cache-invalidation.js";
 
 const router = express.Router();
 
@@ -88,6 +89,10 @@ router.post("/delete", async function (req, res) {
     }
     
     await categoryService.del(id);
+    
+    // ✅ OPTIMIZED: Invalidate category caches
+    cacheInvalidationHandlers.onCategoryChanged();
+    
     redirectWithSuccess(req, res, "/admin/categories", 'Đã xóa danh mục thành công!');
   } catch (error) {
     console.error('Error deleting category:', error);
@@ -134,6 +139,10 @@ router.post("/edit", async function (req, res) {
     };
     
     await categoryService.patch(id, entity);
+    
+    // ✅ OPTIMIZED: Invalidate category caches
+    cacheInvalidationHandlers.onCategoryChanged();
+    
     redirectWithSuccess(req, res, "/admin/categories", 'Đã cập nhật danh mục thành công!');
   } catch (error) {
     console.error('Error updating category:', error);
@@ -164,12 +173,51 @@ router.post("/add", async function (req, res) {
       return res.redirect('/admin/categories/add');
     }
     
-    const entity = {
+    const parentId = req.body.parent_id || null;
+    const subcategories = req.body.subcategories || [];
+    
+    // Validation: If creating root category (no parent), must have at least 1 subcategory
+    if (!parentId && (!subcategories || subcategories.length === 0)) {
+      req.session.errorMessage = 'Danh mục gốc phải có ít nhất một danh mục con!';
+      return res.redirect('/admin/categories/add');
+    }
+    
+    // Validation: Check if all subcategory names are filled
+    if (!parentId && subcategories) {
+      const hasEmpty = subcategories.some(name => !name || name.trim() === '');
+      if (hasEmpty) {
+        req.session.errorMessage = 'Tên danh mục con không được để trống!';
+        return res.redirect('/admin/categories/add');
+      }
+    }
+    
+    // Create parent category
+    const parentEntity = {
       name: req.body.name.trim(),
-      parent_id: req.body.parent_id || null
+      parent_id: parentId
     };
     
-    await categoryService.add(entity);
+    const parentResult = await categoryService.add(parentEntity);
+    
+    // If creating root category, also create subcategories
+    if (!parentId && subcategories && subcategories.length > 0) {
+      // Extract the ID from the result object
+      const parentCategoryId = parentResult[0].id || parentResult[0];
+      
+      // Create all subcategories
+      for (const subcatName of subcategories) {
+        if (subcatName && subcatName.trim()) {
+          await categoryService.add({
+            name: subcatName.trim(),
+            parent_id: parentCategoryId
+          });
+        }
+      }
+    }
+    
+    // ✅ OPTIMIZED: Invalidate category caches
+    cacheInvalidationHandlers.onCategoryChanged();
+    
     redirectWithSuccess(req, res, "/admin/categories", 'Đã thêm danh mục mới thành công!');
   } catch (error) {
     console.error('Error adding category:', error);

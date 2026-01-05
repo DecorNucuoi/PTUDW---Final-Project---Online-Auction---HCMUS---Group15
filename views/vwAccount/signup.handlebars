@@ -2,16 +2,20 @@
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
   <script >
-    $('#email').on('blur', function () {
-        const email = $(this).val();
-        $.getJSON(`/account/is-available?email=${email}`, function (data) {
-            if (data === false) {
-                alert('Email already exists!');
-                $('#email').addClass('is-invalid');
-            } else {
-                $('#email').removeClass('is-invalid');
-            }
-        });
+    document.getElementById('email').addEventListener('blur', function () {
+        const email = this.value;
+        fetch(`/account/is-available?email=${email}`)
+            .then(response => response.json())
+            .then(data => {
+                const emailInput = document.getElementById('email');
+                if (data === false) {
+                    alert('Email already exists!');
+                    emailInput.classList.add('is-invalid');
+                } else {
+                    emailInput.classList.remove('is-invalid');
+                }
+            })
+            .catch(error => console.error('Email check error:', error));
     });
 
     document.querySelector('#frmSignup').addEventListener('submit', function (e) {

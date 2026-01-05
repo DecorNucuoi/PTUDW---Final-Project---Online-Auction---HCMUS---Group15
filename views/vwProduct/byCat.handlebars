@@ -304,11 +304,13 @@
 
 {{#section 'js'}}
 <script>
-    let categoryId = "{{catId}}";
+    let categoryId = parseInt("{{catId}}") || 0;
     let currentPage = 1;
     let sortBy = 'time_desc';
     let minPrice = null;
     let maxPrice = null;
+    
+    console.log('[byCat] Page loaded with categoryId:', categoryId);
 
     function formatCurrency(amount) {
         return new Intl.NumberFormat('en-US').format(amount);
@@ -339,8 +341,11 @@
 
     function loadProducts(page = 1) {
         currentPage = page;
-        $('#loading').show();
-        $('#product-container, #empty-state').hide();
+        console.log('[byCat] loadProducts called - categoryId:', categoryId, 'page:', page, 'sortBy:', sortBy);
+        
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('product-container').style.display = 'none';
+        document.getElementById('empty-state').style.display = 'none';
 
         const params = new URLSearchParams({
             id: categoryId,
@@ -350,20 +355,31 @@
 
         if (minPrice) params.append('minPrice', minPrice);
         if (maxPrice) params.append('maxPrice', maxPrice);
+        
+        const apiUrl = `/products/api/byCat?${params.toString()}`;
+        console.log('[byCat] Fetching:', apiUrl);
 
-        $.getJSON(`/products/api/byCat?${params.toString()}`)
-            .done(function (data) {
-                $('#loading').hide();
+        fetch(apiUrl)
+            .then(response => {
+                console.log('[byCat] Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('[byCat] Data received:', data);
+                document.getElementById('loading').style.display = 'none';
 
                 // Update results info
                 const categoryName = getCategoryName(categoryId);
                 const total = data.total || 0;
-                $('#category-title').text(categoryName);
-                $('#results-info').text(`Showing ${data.products.length} of ${total} products`);
+                document.getElementById('category-title').textContent = categoryName;
+                document.getElementById('results-info').textContent = `Showing ${data.products.length} of ${total} products`;
 
                 if (data.products.length === 0) {
-                    $('#empty-state').show();
-                    $('#pagination-container').empty();
+                    document.getElementById('empty-state').style.display = 'block';
+                    document.getElementById('pagination-container').innerHTML = '';
                     return;
                 }
 
@@ -372,8 +388,10 @@
                         <div class="card-product h-100">
                             <div class="card-img-container">
                                 <a href="/products/detail/${p.id}">
-                                    <img src="${p.imagePath}" 
-                                         alt="${p.name}" loading="lazy">
+                                    <picture>
+                                        <source srcset="${p.imagePath}" type="image/webp">
+                                        <img src="${p.imagePath}" alt="${p.name}" loading="lazy" width="200" height="200">
+                                    </picture>
                                 </a>
                                 ${isEndingSoon(p.end_time) ? '<div class="card-badge badge-hot">Ending Soon</div>' : ''}
                                 <button class="btn btn-watchlist position-absolute" 
@@ -402,24 +420,30 @@
                     </div>
                 `).join('');
 
-                $('#product-container').html(html).show();
+                const container = document.getElementById('product-container');
+                container.innerHTML = html;
+                container.style.display = '';
                 renderPagination(data.currentPage, data.totalPages);
             })
-            .fail(function () {
-                $('#loading').hide();
-                $('#product-container').html('<div class="col-12 text-center py-5 text-danger">Error loading products. Please try again.</div>').show();
+            .catch(error => {
+                console.error('[byCat] Error loading products:', error);
+                document.getElementById('loading').style.display = 'none';
+                const container = document.getElementById('product-container');
+                container.innerHTML = '<div class="col-12 text-center py-5 text-danger">Error loading products: ' + error.message + '. Please try again.</div>';
+                container.style.display = '';
             });
     }
 
     function getCategoryName(catId) {
-                const categories = {{{json categories}}};
-    const category = categories.find(c => c.id == catId);
-    return category ? category.name : 'All Products';
+        const categories = {{{json categories}}};
+        const category = categories.find(c => c.id == catId);
+        return category ? category.name : 'All Products';
     }
 
     function renderPagination(current, total) {
+        const container = document.getElementById('pagination-container');
         if (total <= 1) {
-            $('#pagination-container').empty();
+            container.innerHTML = '';
             return;
         }
 
@@ -478,41 +502,45 @@
             </li>`;
         }
 
-        $('#pagination-container').html(html);
+        container.innerHTML = html;
     }
 
     // Event handlers
-    $(document).ready(function () {
+    document.addEventListener('DOMContentLoaded', function () {
         // Load initial products
         loadProducts(1);
 
         // Sort change
-        $('#sortSelect').on('change', function () {
-            sortBy = $(this).val();
+        document.getElementById('sortSelect').addEventListener('change', function () {
+            sortBy = this.value;
             loadProducts(1);
         });
 
         // Price filter
-        $('#applyPriceFilter').on('click', function () {
-            minPrice = $('#minPrice').val() || null;
-            maxPrice = $('#maxPrice').val() || null;
+        document.getElementById('applyPriceFilter').addEventListener('click', function () {
+            minPrice = document.getElementById('minPrice').value || null;
+            maxPrice = document.getElementById('maxPrice').value || null;
             loadProducts(1);
         });
 
         // Sidebar category toggle
-        $('.sidebar-category > a').on('click', function (e) {
-            const parent = $(this).parent();
-            if (parent.find('.sidebar-subcategories').length > 0) {
-                e.preventDefault();
-                parent.toggleClass('expanded');
-            }
+        document.querySelectorAll('.sidebar-category > a').forEach(link => {
+            link.addEventListener('click', function (e) {
+                const parent = this.parentElement;
+                if (parent.querySelector('.sidebar-subcategories')) {
+                    e.preventDefault();
+                    parent.classList.toggle('expanded');
+                }
+            });
         });
 
         // Clear filters
-        $(document).on('keyup', '#minPrice, #maxPrice', function (e) {
-            if (e.key === 'Enter') {
-                $('#applyPriceFilter').click();
-            }
+        document.querySelectorAll('#minPrice, #maxPrice').forEach(input => {
+            input.addEventListener('keyup', function (e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('applyPriceFilter').click();
+                }
+            });
         });
     });
 </script>

@@ -14,7 +14,16 @@ const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET;
 
 
 router.get('/signup', function(req, res) {
-    res.render('vwAccount/signup');
+    // Redirect if already logged in
+    if (req.session.isAuthenticated) {
+        return res.redirect('/');
+    }
+    
+    // Save return URL if provided
+    const retUrl = req.query.retUrl || req.headers.referer || '/';
+    req.session.retUrl = retUrl;
+    
+    res.render('vwAccount/signup', { retUrl });
 });
 
 router.post('/signup',async function(req, res) {
@@ -136,14 +145,26 @@ router.post('/otp', async function(req, res) {
         req.session.authUser = user;
         req.session.successMessage = 'Đăng ký thành công! Chào mừng bạn đến với sàn đấu giá.';
         
-        res.redirect('/');
+        // Redirect to return URL if exists
+        const retUrl = req.session.retUrl || '/';
+        delete req.session.retUrl;
+        res.redirect(retUrl);
     } else {
         res.render('vwAccount/otp', { email, err_message: 'Invalid OTP.' });
     }
 });
 
 router.get('/signin', function (req, res) {
-    res.render('vwAccount/signin');
+    // Redirect if already logged in
+    if (req.session.isAuthenticated) {
+        return res.redirect('/');
+    }
+    
+    // Save return URL if provided
+    const retUrl = req.query.retUrl || req.headers.referer || '/';
+    req.session.retUrl = retUrl;
+    
+    res.render('vwAccount/signin', { retUrl });
 });
 
 router.post('/signin', async function (req, res) {
@@ -458,9 +479,10 @@ router.get('/won', isAuth, async function (req, res) {
     const userId = req.session.authUser.id;
     const list = await userService.getWonList(userId);
 
-    for (const item of list) {
+    // ✅ OPTIMIZED: Parallel execution instead of sequential loop
+    await Promise.all(list.map(async (item) => {
         item.is_rated = await userService.hasRated(item.id, userId);
-    }
+    }));
 
     res.render('vwAccount/won', { 
         products: list, 

@@ -1,0 +1,1340 @@
+{{#section 'css'}}
+<style>
+    /* Coastal Fresh Theme - Match existing style.css */
+    :root {
+        --accent-primary: #4A8C8C;
+        --accent-secondary: #70D6C7;
+        --accent-tertiary: #C7F0F8;
+        --accent-warm: #F5DEB3;
+        --filter-bg: #ffffff;
+        --filter-border: #e5e7eb;
+        --filter-hover: #f8fafc;
+    }
+
+    .search-page {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+
+    /* 🔍 Advanced Search Bar */
+    .advanced-search-bar {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(74, 140, 140, 0.1);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--filter-border);
+    }
+
+    .search-input-group {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+
+    .search-input-group input {
+        padding: 0.875rem 3.5rem 0.875rem 3rem;
+        border: 2px solid var(--filter-border);
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s;
+        width: 100%;
+    }
+
+    .search-input-group input:focus {
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 3px rgba(74, 140, 140, 0.1);
+        outline: none;
+    }
+
+    .search-input-group .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--accent-primary);
+        font-size: 1.125rem;
+    }
+
+    .search-input-group .clear-btn {
+        position: absolute;
+        right: 4rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #9ca3af;
+        cursor: pointer;
+        padding: 0.25rem;
+        transition: color 0.2s;
+    }
+
+    .search-input-group .clear-btn:hover {
+        color: #ef4444;
+    }
+
+    .search-input-group .search-btn {
+        position: absolute;
+        right: 0.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: var(--accent-primary);
+        border: none;
+        border-radius: 8px;
+        color: white;
+        padding: 0.625rem 1.25rem;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    .search-input-group .search-btn:hover {
+        background: #3a7070;
+        transform: translateY(-50%) scale(1.02);
+    }
+
+    /* 📊 Suggestions Dropdown */
+    .suggestions-dropdown {
+        position: absolute;
+        top: calc(100% + 0.5rem);
+        left: 0;
+        right: 0;
+        background: white;
+        border: 2px solid var(--filter-border);
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(74, 140, 140, 0.15);
+        max-height: 320px;
+        overflow-y: auto;
+        z-index: 1000;
+        display: none;
+    }
+
+    .suggestions-dropdown.show {
+        display: block;
+    }
+
+    .suggestion-item {
+        padding: 0.875rem 1.25rem;
+        cursor: pointer;
+        transition: background 0.15s;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        border-bottom: 1px solid var(--filter-border);
+    }
+
+    .suggestion-item:last-child {
+        border-bottom: none;
+    }
+
+    .suggestion-item:hover {
+        background: #f0fafa;
+    }
+
+    .suggestion-img {
+        width: 48px;
+        height: 48px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid var(--filter-border);
+    }
+
+    .suggestion-text {
+        flex: 1;
+    }
+
+    .suggestion-name {
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 0.25rem;
+        font-size: 0.95rem;
+    }
+
+    .suggestion-price {
+        color: var(--accent-primary);
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    /* 🎯 Popular Searches */
+    .popular-searches {
+        margin-top: 1rem;
+    }
+
+    .popular-search-tag {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background: var(--accent-tertiary);
+        border-radius: 20px;
+        color: var(--accent-primary);
+        font-size: 0.875rem;
+        margin: 0.25rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+        font-weight: 500;
+    }
+
+    .popular-search-tag:hover {
+        background: var(--accent-primary);
+        color: white;
+        border-color: var(--accent-primary);
+        transform: translateY(-2px);
+    }
+
+    /* 📱 Filters Sidebar */
+    .filters-sidebar {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(74, 140, 140, 0.1);
+        padding: 0;
+        position: sticky;
+        top: 20px;
+        max-height: calc(100vh - 40px);
+        overflow-y: auto;
+        border: 1px solid var(--filter-border);
+    }
+
+    .filters-header {
+        padding: 1.5rem;
+        border-bottom: 2px solid var(--filter-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: linear-gradient(135deg, var(--accent-tertiary) 0%, white 100%);
+    }
+
+    .filters-header h5 {
+        margin: 0;
+        font-weight: 700;
+        color: var(--accent-primary);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .clear-filters-btn {
+        background: none;
+        border: none;
+        color: #ef4444;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+
+    .clear-filters-btn:hover {
+        background: #fee2e2;
+    }
+
+    .filter-group {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--filter-border);
+    }
+
+    .filter-group:last-child {
+        border-bottom: none;
+    }
+
+    .filter-title {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: #111827;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .filter-title i {
+        color: var(--accent-primary);
+    }
+
+    /* 💲 Price Range Slider */
+    .price-range-inputs {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: 0.5rem;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .price-input {
+        padding: 0.625rem;
+        border: 1px solid var(--filter-border);
+        border-radius: 8px;
+        font-size: 0.875rem;
+    }
+
+    .price-input:focus {
+        outline: none;
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 3px rgba(74, 140, 140, 0.1);
+    }
+
+    /* 📦 Condition Pills */
+    .condition-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .condition-pill {
+        padding: 0.625rem 1rem;
+        border: 2px solid var(--filter-border);
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: white;
+    }
+
+    .condition-pill:hover {
+        border-color: var(--accent-primary);
+        background: var(--accent-tertiary);
+    }
+
+    .condition-pill.active {
+        border-color: var(--accent-primary);
+        background: var(--accent-primary);
+        color: white;
+    }
+
+    /* 🏷️ Category Tree */
+    .category-tree {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .category-item {
+        padding: 0.75rem;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .category-item:hover {
+        background: var(--filter-hover);
+    }
+
+    .category-item.active {
+        background: var(--accent-tertiary);
+        color: var(--accent-primary);
+        font-weight: 600;
+    }
+
+    .category-count {
+        font-size: 0.75rem;
+        color: #9ca3af;
+        background: var(--filter-hover);
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+    }
+
+    /* 🎨 Advanced Filters Toggle */
+    .advanced-filters-toggle {
+        margin-top: 1rem;
+        padding: 0.75rem;
+        background: var(--accent-tertiary);
+        border-radius: 8px;
+        cursor: pointer;
+        text-align: center;
+        font-weight: 600;
+        color: var(--accent-primary);
+        transition: all 0.2s;
+    }
+
+    .advanced-filters-toggle:hover {
+        background: var(--accent-secondary);
+        color: white;
+    }
+
+    .advanced-filters-panel {
+        display: none;
+        padding: 1rem;
+        background: #fafafa;
+        border-radius: 8px;
+        margin-top: 1rem;
+    }
+
+    .advanced-filters-panel.show {
+        display: block;
+    }
+
+    /* 📊 Results Grid */
+    .results-header {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 8px rgba(74, 140, 140, 0.08);
+        border: 1px solid var(--filter-border);
+    }
+
+    .results-count {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .sort-dropdown {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .sort-dropdown select {
+        padding: 0.625rem 2.5rem 0.625rem 1rem;
+        border: 2px solid var(--filter-border);
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        background-color: white;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%234A8C8C' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 16px 12px;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+
+    .sort-dropdown select:focus {
+        outline: none;
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 3px rgba(74, 140, 140, 0.1);
+    }
+
+    /* 🎴 Product Cards */
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .product-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.3s;
+        box-shadow: 0 2px 8px rgba(74, 140, 140, 0.08);
+        position: relative;
+        border: 1px solid var(--filter-border);
+    }
+
+    .product-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(74, 140, 140, 0.15);
+    }
+
+    .product-card-img {
+        position: relative;
+        padding-top: 100%;
+        overflow: hidden;
+        background: var(--filter-hover);
+    }
+
+    .product-card-img img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .product-badge {
+        position: absolute;
+        top: 0.75rem;
+        left: 0.75rem;
+        padding: 0.375rem 0.75rem;
+        background: var(--accent-primary);
+        color: white;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .product-wishlist-btn {
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: white;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .product-wishlist-btn:hover {
+        background: #fee2e2;
+        color: #ef4444;
+        transform: scale(1.1);
+    }
+
+    .product-card-body {
+        padding: 1.25rem;
+    }
+
+    .product-category {
+        font-size: 0.75rem;
+        color: var(--accent-primary);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+
+    .product-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 0.75rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .product-meta {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--filter-border);
+    }
+
+    .meta-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .meta-label {
+        font-size: 0.75rem;
+        color: #6b7280;
+    }
+
+    .meta-value {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .product-price {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .price-label {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-bottom: 0.25rem;
+    }
+
+    .price-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--accent-primary);
+    }
+
+    .time-remaining {
+        text-align: right;
+    }
+
+    .time-value {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #ef4444;
+    }
+
+    /* 📄 Pagination */
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 3rem;
+        gap: 0.5rem;
+    }
+
+    .pagination-btn {
+        padding: 0.625rem 1rem;
+        border: 2px solid var(--filter-border);
+        border-radius: 8px;
+        background: white;
+        color: #4b5563;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+        border-color: var(--accent-primary);
+        background: var(--accent-tertiary);
+        color: var(--accent-primary);
+    }
+
+    .pagination-btn.active {
+        border-color: var(--accent-primary);
+        background: var(--accent-primary);
+        color: white;
+    }
+
+    .pagination-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* 🔄 Loading State */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.9);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        backdrop-filter: blur(4px);
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 64px;
+        height: 64px;
+        border: 6px solid var(--accent-tertiary);
+        border-top-color: var(--accent-primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        box-shadow: 0 4px 16px rgba(74, 140, 140, 0.2);
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* 📱 Responsive */
+    @media (max-width: 992px) {
+        .filters-sidebar {
+            position: static;
+            max-height: none;
+            margin-bottom: 2rem;
+        }
+
+        .products-grid {
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        }
+    }
+
+    @media (max-width: 576px) {
+        .products-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .advanced-search-bar {
+            padding: 1.5rem 1rem;
+        }
+
+        .search-input-group input {
+            padding-right: 3rem;
+        }
+
+        .search-input-group .clear-btn {
+            display: none;
+        }
+    }
+</style>
+{{/section}}
+
+<div class="search-page">
+    <div class="container">
+        <!-- 🔍 Advanced Search Bar -->
+        <div class="advanced-search-bar">
+            <div class="search-input-group">
+                <i class="bi bi-search search-icon"></i>
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    id="searchInput" 
+                    placeholder="Tìm kiếm sản phẩm, danh mục, thương hiệu..." 
+                    value="{{keyword}}"
+                    autocomplete="off">
+                <button type="button" class="clear-btn" id="clearSearchBtn" style="display: none;">
+                    <i class="bi bi-x-circle-fill"></i>
+                </button>
+                <button type="button" class="search-btn" id="searchBtn">
+                    Tìm kiếm
+                </button>
+
+                <!-- Suggestions Dropdown -->
+                <div class="suggestions-dropdown" id="suggestionsDropdown">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+
+            <!-- Popular Searches -->
+            {{#if popularSearches}}
+            <div class="popular-searches">
+                <small class="text-muted">Tìm kiếm phổ biến:</small>
+                <div class="mt-2">
+                    {{#each popularSearches}}
+                    <span class="popular-search-tag" data-keyword="{{this}}">{{this}}</span>
+                    {{/each}}
+                </div>
+            </div>
+            {{/if}}
+        </div>
+
+        <div class="row">
+            <!-- 📱 Filters Sidebar -->
+            <div class="col-lg-3">
+                <div class="filters-sidebar">
+                    <div class="filters-header">
+                        <h5><i class="bi bi-sliders me-2"></i>Bộ lọc</h5>
+                        <button class="clear-filters-btn" id="clearFiltersBtn">
+                            <i class="bi bi-x-lg me-1"></i>Xóa tất cả
+                        </button>
+                    </div>
+
+                    <!-- Category Filter -->
+                    <div class="filter-group">
+                        <div class="filter-title">
+                            <i class="bi bi-grid-3x3-gap"></i>
+                            Danh mục
+                        </div>
+                        <div class="category-tree" id="categoryTree">
+                            <div class="category-item active" data-cat-id="0">
+                                <span><i class="bi bi-collection me-2"></i>Tất cả danh mục</span>
+                                <span class="category-count">{{filtersMetadata.categories.length}}</span>
+                            </div>
+                            {{#each filtersMetadata.categories}}
+                            {{#unless parent_id}}
+                            <div class="category-item" data-cat-id="{{id}}">
+                                <span><i class="bi bi-tag me-2"></i>{{name}}</span>
+                                <span class="category-count">{{product_count}}</span>
+                            </div>
+                            {{/unless}}
+                            {{/each}}
+                        </div>
+                    </div>
+
+                    <!-- Price Range Filter -->
+                    <div class="filter-group">
+                        <div class="filter-title">
+                            <i class="bi bi-currency-dollar"></i>
+                            Khoảng giá
+                        </div>
+                        <div class="price-range-inputs">
+                            <input 
+                                type="number" 
+                                class="price-input" 
+                                id="minPriceInput" 
+                                placeholder="Tối thiểu"
+                                min="{{filtersMetadata.priceRange.min}}"
+                                max="{{filtersMetadata.priceRange.max}}">
+                            <span class="text-muted">-</span>
+                            <input 
+                                type="number" 
+                                class="price-input" 
+                                id="maxPriceInput" 
+                                placeholder="Tối đa"
+                                min="{{filtersMetadata.priceRange.min}}"
+                                max="{{filtersMetadata.priceRange.max}}">
+                        </div>
+                        <div class="price-range-display text-center mb-2">
+                            <small class="text-muted">
+                                <span id="priceRangeText">
+                                    {{#with filtersMetadata.priceRange}}
+                                    {{format_currency min}} - {{format_currency max}}
+                                    {{/with}}
+                                </span>
+                            </small>
+                        </div>
+                        <button class="btn btn-sm btn-primary w-100" id="applyPriceBtn">Áp dụng</button>
+                    </div>
+
+                    <!-- Condition Filter -->
+                    <div class="filter-group">
+                        <div class="filter-title">
+                            <i class="bi bi-box-seam"></i>
+                            Tình trạng
+                        </div>
+                        <div class="condition-pills">
+                            <div class="condition-pill" data-condition="new">
+                                <i class="bi bi-star-fill me-1"></i>Mới
+                            </div>
+                            <div class="condition-pill" data-condition="like_new">
+                                <i class="bi bi-star me-1"></i>Như mới
+                            </div>
+                            <div class="condition-pill" data-condition="used">
+                                <i class="bi bi-box me-1"></i>Đã sử dụng
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Filters Toggle -->
+                    <div class="filter-group">
+                        <div class="advanced-filters-toggle" id="advancedFiltersToggle">
+                            <i class="bi bi-chevron-down me-2"></i>
+                            Bộ lọc nâng cao
+                        </div>
+                        <div class="advanced-filters-panel" id="advancedFiltersPanel">
+                            <!-- Ending Soon Filter -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="bi bi-clock me-1"></i>Sắp kết thúc
+                                </label>
+                                <select class="form-select form-select-sm" id="endingSoonSelect">
+                                    <option value="">Tất cả</option>
+                                    <option value="1">Trong 1 giờ</option>
+                                    <option value="6">Trong 6 giờ</option>
+                                    <option value="24">Trong 24 giờ</option>
+                                    <option value="72">Trong 3 ngày</option>
+                                </select>
+                            </div>
+
+                            <!-- Bid Count Filter -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="bi bi-hammer me-1"></i>Số lượt đấu giá
+                                </label>
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <input type="number" class="form-control form-control-sm" id="minBidsInput" placeholder="Min" min="0">
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="number" class="form-control form-control-sm" id="maxBidsInput" placeholder="Max" min="0">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Seller Rating Filter -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="bi bi-star me-1"></i>Đánh giá người bán (%)
+                                </label>
+                                <select class="form-select form-select-sm" id="sellerRatingSelect">
+                                    <option value="">Tất cả</option>
+                                    <option value="95">95% trở lên</option>
+                                    <option value="90">90% trở lên</option>
+                                    <option value="80">80% trở lên</option>
+                                    <option value="70">70% trở lên</option>
+                                </select>
+                            </div>
+
+                            <button class="btn btn-sm btn-primary w-100" id="applyAdvancedFiltersBtn">
+                                Áp dụng bộ lọc
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 📊 Results Column -->
+            <div class="col-lg-9">
+                <!-- Results Header -->
+                <div class="results-header">
+                    <div>
+                        <div class="results-count" id="resultsCount">
+                            {{#if keyword}}
+                            Kết quả cho "<span class="text-primary">{{keyword}}</span>"
+                            {{else}}
+                            Tất cả sản phẩm
+                            {{/if}}
+                        </div>
+                        <small class="text-muted" id="resultsSubtext">Đang tải...</small>
+                    </div>
+                    <div class="sort-dropdown">
+                        <label class="text-muted small mb-0">Sắp xếp:</label>
+                        <select class="form-select form-select-sm" id="sortSelect">
+                            {{#each filtersMetadata.sortOptions}}
+                            <option value="{{value}}" {{#if (eq value ../sort)}}selected{{/if}}>{{label}}</option>
+                            {{/each}}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Products Grid -->
+                <div class="products-grid" id="productsGrid">
+                    <!-- Dynamically populated -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" style="display: none;">
+                    <div class="text-center py-5">
+                        <i class="bi bi-search" style="font-size: 4rem; color: #d1d5db;"></i>
+                        <h4 class="mt-3">Không tìm thấy kết quả</h4>
+                        <p class="text-muted">Thử thay đổi từ khóa hoặc bộ lọc khác</p>
+                        <button class="btn btn-primary" id="resetSearchBtn">Xóa bộ lọc</button>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination-container" id="paginationContainer">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+{{#section 'js'}}
+<script>
+// 🔧 State Management
+const searchState = {
+    keyword: "{{keyword}}",
+    sort: "{{sort}}" || "relevance",
+    catId: 0,
+    minPrice: null,
+    maxPrice: null,
+    condition: null,
+    minBids: null,
+    maxBids: null,
+    endingSoon: null,
+    minSellerRating: null,
+    currentPage: 1
+};
+
+let suggestionTimeout;
+const filtersMetadata = {{{json filtersMetadata}}};
+
+// 🔍 Search Input with Autocomplete
+const searchInput = document.getElementById('searchInput');
+const suggestionsDropdown = document.getElementById('suggestionsDropdown');
+const clearSearchBtn = document.getElementById('clearSearchBtn');
+
+searchInput.addEventListener('input', (e) => {
+    const value = e.target.value.trim();
+    clearSearchBtn.style.display = value ? 'block' : 'none';
+    
+    if (value.length >= 2) {
+        clearTimeout(suggestionTimeout);
+        suggestionTimeout = setTimeout(() => fetchSuggestions(value), 300);
+    } else {
+        suggestionsDropdown.classList.remove('show');
+    }
+});
+
+searchInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        performSearch();
+    }
+});
+
+clearSearchBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    clearSearchBtn.style.display = 'none';
+    suggestionsDropdown.classList.remove('show');
+    searchState.keyword = '';
+    performSearch();
+});
+
+document.getElementById('searchBtn').addEventListener('click', performSearch);
+
+// 📡 Fetch Suggestions
+async function fetchSuggestions(keyword) {
+    try {
+        const response = await fetch(`/products/api/suggestions?q=${encodeURIComponent(keyword)}&limit=5`);
+        const suggestions = await response.json();
+        
+        if (suggestions.length > 0) {
+            renderSuggestions(suggestions);
+            suggestionsDropdown.classList.add('show');
+        } else {
+            suggestionsDropdown.classList.remove('show');
+        }
+    } catch (error) {
+        console.error('Error fetching suggestions:', error);
+    }
+}
+
+function renderSuggestions(suggestions) {
+    suggestionsDropdown.innerHTML = suggestions.map(item => `
+        <div class="suggestion-item" data-id="${item.id}">
+            <img src="${item.image_url || '/static/imgs/placeholder.jpg'}" alt="${item.name}" class="suggestion-img">
+            <div class="suggestion-text">
+                <div class="suggestion-name">${item.name}</div>
+                <div class="suggestion-price">${formatCurrency(item.current_price)} VNĐ</div>
+            </div>
+        </div>
+    `).join('');
+
+    // Add click handlers
+    document.querySelectorAll('.suggestion-item').forEach(item => {
+        item.addEventListener('click', () => {
+            window.location.href = `/products/detail/${item.dataset.id}`;
+        });
+    });
+}
+
+// Hide suggestions when clicking outside
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-input-group')) {
+        suggestionsDropdown.classList.remove('show');
+    }
+});
+
+// 🏷️ Popular Searches
+document.querySelectorAll('.popular-search-tag').forEach(tag => {
+    tag.addEventListener('click', () => {
+        const keyword = tag.dataset.keyword;
+        searchInput.value = keyword;
+        searchState.keyword = keyword;
+        performSearch();
+    });
+});
+
+// 📂 Category Filter
+document.querySelectorAll('.category-item').forEach(item => {
+    item.addEventListener('click', () => {
+        document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        searchState.catId = parseInt(item.dataset.catId);
+        searchState.currentPage = 1;
+        performSearch();
+    });
+});
+
+// 💲 Price Filter
+document.getElementById('applyPriceBtn').addEventListener('click', () => {
+    const minPrice = document.getElementById('minPriceInput').value;
+    const maxPrice = document.getElementById('maxPriceInput').value;
+    
+    searchState.minPrice = minPrice ? parseInt(minPrice) : null;
+    searchState.maxPrice = maxPrice ? parseInt(maxPrice) : null;
+    searchState.currentPage = 1;
+    performSearch();
+});
+
+// 📦 Condition Filter
+document.querySelectorAll('.condition-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+        const wasActive = pill.classList.contains('active');
+        document.querySelectorAll('.condition-pill').forEach(p => p.classList.remove('active'));
+        
+        if (!wasActive) {
+            pill.classList.add('active');
+            searchState.condition = pill.dataset.condition;
+        } else {
+            searchState.condition = null;
+        }
+        searchState.currentPage = 1;
+        performSearch();
+    });
+});
+
+// 🔧 Advanced Filters
+document.getElementById('advancedFiltersToggle').addEventListener('click', () => {
+    const panel = document.getElementById('advancedFiltersPanel');
+    const toggle = document.getElementById('advancedFiltersToggle');
+    
+    panel.classList.toggle('show');
+    const icon = toggle.querySelector('i');
+    icon.classList.toggle('bi-chevron-down');
+    icon.classList.toggle('bi-chevron-up');
+});
+
+document.getElementById('applyAdvancedFiltersBtn').addEventListener('click', () => {
+    searchState.endingSoon = document.getElementById('endingSoonSelect').value || null;
+    searchState.minBids = document.getElementById('minBidsInput').value || null;
+    searchState.maxBids = document.getElementById('maxBidsInput').value || null;
+    searchState.minSellerRating = document.getElementById('sellerRatingSelect').value || null;
+    searchState.currentPage = 1;
+    performSearch();
+});
+
+// 🔄 Sort Change
+document.getElementById('sortSelect').addEventListener('change', (e) => {
+    searchState.sort = e.target.value;
+    searchState.currentPage = 1;
+    performSearch();
+});
+
+// 🧹 Clear All Filters
+document.getElementById('clearFiltersBtn').addEventListener('click', () => {
+    // Reset state
+    searchState.catId = 0;
+    searchState.minPrice = null;
+    searchState.maxPrice = null;
+    searchState.condition = null;
+    searchState.minBids = null;
+    searchState.maxBids = null;
+    searchState.endingSoon = null;
+    searchState.minSellerRating = null;
+    searchState.currentPage = 1;
+    
+    // Reset UI
+    document.getElementById('minPriceInput').value = '';
+    document.getElementById('maxPriceInput').value = '';
+    document.querySelectorAll('.condition-pill').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
+    document.querySelector('.category-item[data-cat-id="0"]').classList.add('active');
+    document.getElementById('endingSoonSelect').value = '';
+    document.getElementById('minBidsInput').value = '';
+    document.getElementById('maxBidsInput').value = '';
+    document.getElementById('sellerRatingSelect').value = '';
+    
+    performSearch();
+});
+
+document.getElementById('resetSearchBtn')?.addEventListener('click', () => {
+    document.getElementById('clearFiltersBtn').click();
+});
+
+// 🔍 Main Search Function
+async function performSearch() {
+    searchState.keyword = searchInput.value.trim();
+    suggestionsDropdown.classList.remove('show');
+    
+    const params = new URLSearchParams();
+    if (searchState.keyword) params.append('q', searchState.keyword);
+    if (searchState.catId) params.append('catId', searchState.catId);
+    if (searchState.minPrice) params.append('minPrice', searchState.minPrice);
+    if (searchState.maxPrice) params.append('maxPrice', searchState.maxPrice);
+    if (searchState.condition) params.append('condition', searchState.condition);
+    if (searchState.minBids) params.append('minBids', searchState.minBids);
+    if (searchState.maxBids) params.append('maxBids', searchState.maxBids);
+    if (searchState.endingSoon) params.append('endingSoon', searchState.endingSoon);
+    if (searchState.minSellerRating) params.append('minSellerRating', searchState.minSellerRating);
+    params.append('sort', searchState.sort);
+    params.append('page', searchState.currentPage);
+    
+    showLoading();
+    
+    try {
+        const response = await fetch(`/products/api/search?${params.toString()}`);
+        const data = await response.json();
+        
+        renderProducts(data.products);
+        renderPagination(data.currentPage, data.totalPages, data.total);
+        updateResultsInfo(data.total);
+        
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (error) {
+        console.error('Search error:', error);
+        showError();
+    } finally {
+        hideLoading();
+    }
+}
+
+// 🎴 Render Products
+function renderProducts(products) {
+    const grid = document.getElementById('productsGrid');
+    const emptyState = document.getElementById('emptyState');
+    
+    if (products.length === 0) {
+        grid.style.display = 'none';
+        emptyState.style.display = 'block';
+        return;
+    }
+    
+    grid.style.display = 'grid';
+    emptyState.style.display = 'none';
+    
+    grid.innerHTML = products.map(product => `
+        <div class="product-card">
+            <div class="product-card-img">
+                <a href="/products/detail/${product.id}">
+                    <img src="${product.image_url || '/static/imgs/placeholder.jpg'}" alt="${product.name}" loading="lazy">
+                </a>
+                ${product.isNew ? '<div class="product-badge">MỚI</div>' : ''}
+                <button class="product-wishlist-btn btn-watchlist" data-id="${product.id}">
+                    <i class="bi bi-heart"></i>
+                </button>
+            </div>
+            <div class="product-card-body">
+                <div class="product-category">${product.category_name || 'Uncategorized'}</div>
+                <a href="/products/detail/${product.id}" class="text-decoration-none">
+                    <h5 class="product-title">${product.name}</h5>
+                </a>
+                
+                <div class="product-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">Lượt đấu</span>
+                        <span class="meta-value"><i class="bi bi-hammer me-1"></i>${product.bid_count || 0}</span>
+                    </div>
+                    ${product.seller_rating_percentage !== null ? `
+                    <div class="meta-item">
+                        <span class="meta-label">Đánh giá</span>
+                        <span class="meta-value"><i class="bi bi-star-fill me-1 text-warning"></i>${product.seller_rating_percentage}%</span>
+                    </div>
+                    ` : ''}
+                </div>
+                
+                <div class="product-price">
+                    <div>
+                        <div class="price-label">Giá hiện tại</div>
+                        <div class="price-value">${formatCurrency(product.current_price)}</div>
+                    </div>
+                    <div class="time-remaining">
+                        <div class="meta-label">Còn lại</div>
+                        <div class="time-value">${formatTimeRemaining(product.end_time)}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+    
+    // Re-attach watchlist handlers
+    attachWatchlistHandlers();
+}
+
+// 📄 Render Pagination
+function renderPagination(currentPage, totalPages, totalResults) {
+    const container = document.getElementById('paginationContainer');
+    
+    if (totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+    }
+    
+    let html = '';
+    
+    // Previous button
+    html += `<button class="pagination-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="goToPage(${currentPage - 1})">
+        <i class="bi bi-chevron-left"></i>
+    </button>`;
+    
+    // Page numbers
+    const range = 2; // Show 2 pages before and after current
+    for (let i = Math.max(1, currentPage - range); i <= Math.min(totalPages, currentPage + range); i++) {
+        html += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+    }
+    
+    // Next button
+    html += `<button class="pagination-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="goToPage(${currentPage + 1})">
+        <i class="bi bi-chevron-right"></i>
+    </button>`;
+    
+    container.innerHTML = html;
+}
+
+function goToPage(page) {
+    searchState.currentPage = page;
+    performSearch();
+}
+
+// 📊 Update Results Info
+function updateResultsInfo(total) {
+    const count = document.getElementById('resultsCount');
+    const subtext = document.getElementById('resultsSubtext');
+    
+    if (searchState.keyword) {
+        count.innerHTML = `Kết quả cho "<span class="text-primary">${searchState.keyword}</span>"`;
+    } else {
+        count.textContent = 'Tất cả sản phẩm';
+    }
+    
+    subtext.textContent = `Tìm thấy ${total} sản phẩm`;
+}
+
+// 🔄 Loading States
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('show');
+}
+
+function showError() {
+    const grid = document.getElementById('productsGrid');
+    grid.innerHTML = `
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
+            <h4 class="mt-3">Có lỗi xảy ra</h4>
+            <p class="text-muted">Vui lòng thử lại sau</p>
+        </div>
+    `;
+}
+
+// 🛠️ Utility Functions
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('vi-VN').format(amount) + ' VNĐ';
+}
+
+function formatTimeRemaining(endTime) {
+    const end = new Date(endTime);
+    const now = new Date();
+    const diff = end - now;
+    
+    if (diff <= 0) return 'Đã kết thúc';
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (days > 0) return `${days} ngày`;
+    if (hours > 0) return `${hours} giờ`;
+    return `${minutes} phút`;
+}
+
+// ❤️ Watchlist Handlers
+function attachWatchlistHandlers() {
+    document.querySelectorAll('.btn-watchlist').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const productId = btn.dataset.id;
+            
+            {{#unless isAuthenticated}}
+            window.location.href = '/account/signin?retUrl=' + encodeURIComponent(window.location.pathname + window.location.search);
+            return;
+            {{/unless}}
+            
+            try {
+                const response = await fetch('/watchlist/toggle', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ productId })
+                });
+                
+                if (response.ok) {
+                    const icon = btn.querySelector('i');
+                    icon.classList.toggle('bi-heart');
+                    icon.classList.toggle('bi-heart-fill');
+                    btn.classList.toggle('text-danger');
+                }
+            } catch (error) {
+                console.error('Watchlist error:', error);
+            }
+        });
+    });
+}
+
+// 🚀 Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    performSearch();
+});
+</script>
+{{/section}}

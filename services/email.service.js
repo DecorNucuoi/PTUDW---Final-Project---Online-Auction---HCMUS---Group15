@@ -795,6 +795,101 @@ export default {
     // Chat & Admin emails
     sendNewMessageEmail,
     sendUpgradeApprovedEmail,
-    sendUpgradeRejectedEmail
+    sendUpgradeRejectedEmail,
+    // Product update notification
+    sendProductUpdateEmail
 };
 
+/**
+ * Send email to all bidders when seller updates product description
+ * @param {Object} product - Product information
+ * @param {Array} bidders - Array of bidder objects with email
+ * @param {string} updateType - Type of update (e.g., "description", "images")
+ */
+export async function sendProductUpdateEmail(product, bidders, updateType = "description") {
+    if (!bidders || bidders.length === 0) {
+        console.log(`[EMAIL] No bidders to notify for product #${product.id}`);
+        return { sent: 0, failed: 0 };
+    }
+
+    const updateTypeText = {
+        description: "mô tả sản phẩm",
+        images: "hình ảnh",
+        info: "thông tin"
+    };
+
+    let sentCount = 0;
+    let failedCount = 0;
+
+    // Send email to each bidder
+    for (const bidder of bidders) {
+        if (!bidder.email) {
+            failedCount++;
+            continue;
+        }
+
+        const mailOptions = {
+            from: FROM_EMAIL,
+            to: bidder.email,
+            subject: `📢 [Cập nhật] Sản phẩm "${product.name}" đã được cập nhật`,
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px; border: 2px solid #0d6efd; border-radius: 8px; max-width: 600px;">
+                    <div style="background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%); color: white; padding: 25px; text-align: center; border-radius: 6px 6px 0 0; margin: -20px -20px 20px -20px;">
+                        <h2 style="margin: 0;">📢 Thông báo cập nhật sản phẩm</h2>
+                    </div>
+                    
+                    <p>Xin chào <strong>${bidder.full_name || bidder.email}</strong>,</p>
+                    <p>Người bán vừa <strong style="color: #0d6efd;">cập nhật ${updateTypeText[updateType] || updateType}</strong> cho sản phẩm mà bạn đã tham gia đấu giá:</p>
+                    
+                    <div style="background-color: #cfe2ff; padding: 20px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #0d6efd;">
+                        <h3 style="margin: 0 0 10px 0; color: #084298;">${product.name}</h3>
+                        <p style="margin: 5px 0;"><strong>Giá hiện tại:</strong> 
+                            <span style="font-size: 1.3em; color: #0d6efd; font-weight: bold;">
+                                ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.current_price)}
+                            </span>
+                        </p>
+                        <p style="margin: 5px 0;"><strong>Thời gian kết thúc:</strong> ${new Date(product.end_time).toLocaleString('vi-VN')}</p>
+                        <p style="margin: 5px 0; font-size: 0.9em; color: #6c757d;">ID sản phẩm: #${product.id}</p>
+                    </div>
+
+                    <div style="background-color: #fff3cd; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #ffc107;">
+                        <p style="margin: 0; color: #856404;">
+                            <strong>💡 Lưu ý:</strong> Vui lòng xem lại thông tin sản phẩm để đảm bảo bạn vẫn muốn tiếp tục tham gia đấu giá.
+                        </p>
+                    </div>
+
+                    <p><strong>📋 Bạn có thể:</strong></p>
+                    <ul style="line-height: 1.8;">
+                        <li>Xem chi tiết cập nhật trên trang sản phẩm</li>
+                        <li>Tiếp tục đấu giá nếu vẫn quan tâm</li>
+                        <li>Gửi câu hỏi cho người bán nếu cần làm rõ</li>
+                    </ul>
+
+                    <p style="text-align: center; margin-top: 30px;">
+                        <a href="${BASE_URL}/products/detail/${product.id}" 
+                           style="display: inline-block; background-color: #0d6efd; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                            Xem chi tiết sản phẩm →
+                        </a>
+                    </p>
+
+                    <hr style="margin: 30px 0; border: 1px solid #ddd;">
+                    <p style="font-size: 12px; color: #6c757d; margin: 0;">
+                        Bạn nhận được email này vì đã tham gia đấu giá sản phẩm. Email được gửi tự động từ hệ thống đấu giá. Vui lòng không trả lời email này.
+                    </p>
+                </div>
+            `
+        };
+
+        try {
+            await transporter.sendMail(mailOptions);
+            console.log(`[EMAIL] ✓ Product update email sent to ${bidder.email} for product #${product.id}`);
+            sentCount++;
+        } catch (error) {
+            console.error(`[EMAIL] ✗ Failed to send update email to ${bidder.email}:`, error.message);
+            failedCount++;
+        }
+    }
+
+    console.log(`[EMAIL] Product update notification summary: ${sentCount} sent, ${failedCount} failed`);
+    return { sent: sentCount, failed: failedCount };
+}

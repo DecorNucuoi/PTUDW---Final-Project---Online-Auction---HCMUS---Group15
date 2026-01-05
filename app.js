@@ -18,13 +18,51 @@ import transactionRouter from './routes/transaction.route.js';
 import * as categoryService from './services/category.service.js';
 import { isAuth, isAdmin } from "./middlewares/auth.mdw.js";
 import { attachRoleInfo } from "./middlewares/role.mdw.js";
+import { performanceMonitoring } from "./middlewares/performance.mdw.js";
 import db from './utils/db.js';
 import { transporter } from './utils/mailer.js';
 import * as emailService from './services/email.service.js';
+import { longCache, cacheWrapper } from './utils/cache.js';
+import compression from 'compression';
+import { productImageHelper, imageFallbackHelper } from './utils/image-config.js';
 
 const app = express();
 
 const PORT = process.env.PORT || 3000;
+
+// ✅ OPTIMIZED: Performance monitoring (must be early in chain)
+app.use(performanceMonitoring);
+
+// ✅ OPTIMIZED: Add gzip compression middleware
+app.use(compression({
+    level: 6,          // Compression level (0-9, 6 is good balance)
+    threshold: 1024,   // Only compress responses > 1KB
+    filter: (req, res) => {
+        // Don't compress if client explicitly requests no compression
+        if (req.headers['x-no-compression']) {
+            return false;
+        }
+        // Use default filter function
+        return compression.filter(req, res);
+    }
+}));
+
+// ✅ OPTIMIZED: Add request timeout protection (30s limit)
+app.use((req, res, next) => {
+  // Set timeout to 30 seconds
+  req.setTimeout(30000);
+  res.setTimeout(30000);
+  
+  // Handle timeout
+  req.on('timeout', () => {
+    console.error('[Timeout] Request timeout:', req.method, req.url);
+    if (!res.headersSent) {
+      res.status(408).send('Request timeout');
+    }
+  });
+  
+  next();
+});
 
 app.set('trust proxy', 1)
 app.use(session({
@@ -57,6 +95,9 @@ app.engine('handlebars', engine({
       return Math.round(percentage);
     },
     section: expressHandlebarsSections(),
+    eq: function (a, b) {
+      return a === b;
+    },
     isEqual: function (a, b) {
       return a === b;
     },
@@ -87,6 +128,12 @@ app.engine('handlebars', engine({
     lte: function (a, b) {
       return a <= b;
     },
+    addOne: function (value) {
+      return value + 1;
+    },
+    // ✅ OPTIMIZED: Centralized image path helpers (no hardcoding)
+    productImage: productImageHelper,
+    imageFallback: imageFallbackHelper,
     hasSubcategories: function (parentId, categories) {
       if (!parentId || !categories || !Array.isArray(categories)) return false;
       const numParentId = parseInt(parentId);
@@ -146,12 +193,35 @@ app.use(function(req, res, next) {
   next();
 });
 
+// ✅ OPTIMIZED: Cache mega menu data (eliminate ~200 queries/s)
 app.use(async function (req, res, next) {
-  const list = await categoryService.findAll();
-  const megaMenuData = await categoryService.buildMegaMenuStructure();
-  res.locals.lcCategories = list;
-  res.locals.megaMenuCategories = megaMenuData;
-  next();
+  try {
+    // Cache categories for 5 minutes
+    const list = await cacheWrapper(
+      longCache,
+      'categories:all',
+      300,
+      () => categoryService.findAll()
+    );
+
+    // Cache mega menu for 5 minutes
+    const megaMenuData = await cacheWrapper(
+      longCache,
+      'megamenu:structure',
+      300,
+      () => categoryService.buildMegaMenuStructure()
+    );
+
+    res.locals.lcCategories = list;
+    res.locals.megaMenuCategories = megaMenuData;
+    next();
+  } catch (error) {
+    console.error('[Middleware] Category loading error:', error);
+    // Fallback to empty arrays on error
+    res.locals.lcCategories = [];
+    res.locals.megaMenuCategories = [];
+    next();
+  }
 });
 
 app.use('/categories', categoryRouter);

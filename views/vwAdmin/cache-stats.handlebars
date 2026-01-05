@@ -1,0 +1,218 @@
+<div class="container-fluid py-4">
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <h2 class="mb-0">
+          <i class="bi bi-speedometer2 me-2"></i>
+          Cache Statistics
+        </h2>
+        <form method="POST" action="/admin/clear-cache" onsubmit="return confirm('Clear all caches? This may temporarily slow down the site.');">
+          <button type="submit" class="btn btn-danger">
+            <i class="bi bi-trash me-2"></i>
+            Clear All Caches
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cache Statistics Cards -->
+  <div class="row mb-4">
+    <!-- Short Cache (30s) -->
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            <i class="bi bi-lightning-charge me-2"></i>
+            Short Cache (30s TTL)
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-6 mb-3">
+              <div class="text-muted small">Hit Rate</div>
+              <div class="h3 mb-0 text-success">{{hitRate.short}}%</div>
+            </div>
+            <div class="col-6 mb-3">
+              <div class="text-muted small">Total Keys</div>
+              <div class="h3 mb-0">{{stats.short.keys}}</div>
+            </div>
+            <div class="col-6">
+              <div class="text-muted small">Hits</div>
+              <div class="h5 mb-0 text-success">{{format_number stats.short.hits}}</div>
+            </div>
+            <div class="col-6">
+              <div class="text-muted small">Misses</div>
+              <div class="h5 mb-0 text-warning">{{format_number stats.short.misses}}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Medium Cache (5min) -->
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0">
+            <i class="bi bi-clock me-2"></i>
+            Medium Cache (5min TTL)
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-6 mb-3">
+              <div class="text-muted small">Hit Rate</div>
+              <div class="h3 mb-0 text-success">{{hitRate.medium}}%</div>
+            </div>
+            <div class="col-6 mb-3">
+              <div class="text-muted small">Total Keys</div>
+              <div class="h3 mb-0">{{stats.medium.keys}}</div>
+            </div>
+            <div class="col-6">
+              <div class="text-muted small">Hits</div>
+              <div class="h5 mb-0 text-success">{{format_number stats.medium.hits}}</div>
+            </div>
+            <div class="col-6">
+              <div class="text-muted small">Misses</div>
+              <div class="h5 mb-0 text-warning">{{format_number stats.medium.misses}}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Long Cache (1h) -->
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">
+          <h5 class="mb-0">
+            <i class="bi bi-hourglass-split me-2"></i>
+            Long Cache (1h TTL)
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-6 mb-3">
+              <div class="text-muted small">Hit Rate</div>
+              <div class="h3 mb-0 text-success">{{hitRate.long}}%</div>
+            </div>
+            <div class="col-6 mb-3">
+              <div class="text-muted small">Total Keys</div>
+              <div class="h3 mb-0">{{stats.long.keys}}</div>
+            </div>
+            <div class="col-6">
+              <div class="text-muted small">Hits</div>
+              <div class="h5 mb-0 text-success">{{format_number stats.long.hits}}</div>
+            </div>
+            <div class="col-6">
+              <div class="text-muted small">Misses</div>
+              <div class="h5 mb-0 text-warning">{{format_number stats.long.misses}}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cache Keys Details -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <h5 class="mb-0">
+            <i class="bi bi-key me-2"></i>
+            Cached Keys
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <!-- Short Cache Keys -->
+            <div class="col-md-4">
+              <h6 class="text-primary">Short Cache Keys ({{cacheKeys.short.length}})</h6>
+              {{#if cacheKeys.short.length}}
+                <div class="list-group">
+                  {{#each cacheKeys.short}}
+                    <div class="list-group-item list-group-item-action small">
+                      <code>{{this}}</code>
+                    </div>
+                  {{/each}}
+                </div>
+              {{else}}
+                <p class="text-muted small">No keys cached</p>
+              {{/if}}
+            </div>
+
+            <!-- Medium Cache Keys -->
+            <div class="col-md-4">
+              <h6 class="text-info">Medium Cache Keys ({{cacheKeys.medium.length}})</h6>
+              {{#if cacheKeys.medium.length}}
+                <div class="list-group">
+                  {{#each cacheKeys.medium}}
+                    <div class="list-group-item list-group-item-action small">
+                      <code>{{this}}</code>
+                    </div>
+                  {{/each}}
+                </div>
+              {{else}}
+                <p class="text-muted small">No keys cached</p>
+              {{/if}}
+            </div>
+
+            <!-- Long Cache Keys -->
+            <div class="col-md-4">
+              <h6 class="text-success">Long Cache Keys ({{cacheKeys.long.length}})</h6>
+              {{#if cacheKeys.long.length}}
+                <div class="list-group">
+                  {{#each cacheKeys.long}}
+                    <div class="list-group-item list-group-item-action small">
+                      <code>{{this}}</code>
+                    </div>
+                  {{/each}}
+                </div>
+              {{else}}
+                <p class="text-muted small">No keys cached</p>
+              {{/if}}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Performance Tips -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card shadow-sm border-info">
+        <div class="card-header bg-info bg-opacity-10">
+          <h5 class="mb-0 text-info">
+            <i class="bi bi-info-circle me-2"></i>
+            Performance Tips
+          </h5>
+        </div>
+        <div class="card-body">
+          <ul class="mb-0">
+            <li><strong>High Hit Rate (>75%):</strong> Cache is working effectively! 🎉</li>
+            <li><strong>Medium Hit Rate (50-75%):</strong> Cache is helping, but could be optimized.</li>
+            <li><strong>Low Hit Rate (<50%):</strong> Consider increasing TTL or reviewing cache strategy.</li>
+            <li><strong>Many Keys:</strong> More keys = more memory usage. Monitor server RAM.</li>
+            <li><strong>Clear Cache:</strong> Only when necessary (after major data changes).</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .card {
+    transition: transform 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-5px);
+  }
+  .list-group-item code {
+    font-size: 0.85rem;
+    color: #0d6efd;
+  }
+</style>

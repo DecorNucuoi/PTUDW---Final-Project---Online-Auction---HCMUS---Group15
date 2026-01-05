@@ -10,6 +10,8 @@ import db from '../utils/db.js';
 import { isAuth, isSeller } from '../middlewares/auth.mdw.js';
 import { requireAuth, isBidderOrSeller, isAtLeastSeller, allowGuest } from '../middlewares/role.mdw.js';
 import { transporter } from '../utils/mailer.js';
+import { shortCache, mediumCache, cacheWrapper, clearCacheByPattern } from '../utils/cache.js';
+import { processMultipleImages, deleteProductImages } from '../utils/image-processor.js';
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -45,6 +47,8 @@ router.post('/question', async function (req, res) {
     };
     await productService.addQuestion(newQuestion);
 
+    // ✅ OPTIMIZED: Invalidate questions cache
+    clearCacheByPattern(`product:${proId}:questions`);
 
     const seller = await db('users').where('id', product.seller_id).first();
     const sellerEmail = seller.email;
@@ -156,7 +160,7 @@ router.get('/byCat', async function (req, res) {
 
 router.get('/api/byCat', async function (req, res) {
     try {
-        const catId = req.query.id || 0;
+        const catId = parseInt(req.query.id) || 0;
         const page = parseInt(req.query.page) || 1;
         const limit = 6;
         const offset = (page - 1) * limit;
@@ -164,8 +168,12 @@ router.get('/api/byCat', async function (req, res) {
         const minPrice = req.query.minPrice ? parseInt(req.query.minPrice) : null;
         const maxPrice = req.query.maxPrice ? parseInt(req.query.maxPrice) : null;
 
+        console.log('[API /api/byCat] Request:', { catId, page, limit, offset, sortBy, minPrice, maxPrice });
+
         const total = await productService.countByCat(catId, minPrice, maxPrice);
         const products = await productService.findPageByCat(catId, limit, offset, sortBy, minPrice, maxPrice);
+
+        console.log('[API /api/byCat] Response:', { total, productsCount: products.length });
 
         const totalPages = Math.ceil(total / limit);
 
@@ -182,21 +190,54 @@ router.get('/api/byCat', async function (req, res) {
 });
 
 
-router.get('/search', function (req, res) {
+router.get('/search', async function (req, res) {
     const keyword = req.query.q || '';
-    res.render('vwProduct/search', { keyword });
+    const sort = req.query.sort || 'relevance';
+    
+    // Get filter metadata for UI
+    const filtersMetadata = await productService.getSearchFiltersMetadata();
+    const popularSearches = await productService.getPopularSearches(8);
+    
+    res.render('vwProduct/search', { 
+        keyword, 
+        sort,
+        filtersMetadata,
+        popularSearches
+    });
 });
 
+// 🔍 ENHANCED SEARCH API with Advanced Filters
 router.get('/api/search', async function (req, res) {
     try {
         const keyword = req.query.q || '';
-        const catId = req.query.catId || 0;
-        const sort = req.query.sort || 'time_desc';
+        const catId = parseInt(req.query.catId) || 0;
+        const sort = req.query.sort || 'relevance';
         const page = parseInt(req.query.page) || 1;
-        const limit = 6;
+        
+        // Advanced filters
+        const filters = {
+            minPrice: parseInt(req.query.minPrice) || null,
+            maxPrice: parseInt(req.query.maxPrice) || null,
+            condition: req.query.condition || null,
+            minBids: parseInt(req.query.minBids) || null,
+            maxBids: parseInt(req.query.maxBids) || null,
+            endingSoon: parseInt(req.query.endingSoon) || null,
+            minSellerRating: parseInt(req.query.minSellerRating) || null
+        };
+        
+        const limit = 12; // Increased for better grid layout
         const offset = (page - 1) * limit;
 
-        const result = await productService.search(keyword, catId, sort, limit, offset);
+        console.log('[API /api/search] Advanced Search Request:', { 
+            keyword, catId, sort, page, filters 
+        });
+
+        const result = await productService.search(keyword, catId, sort, limit, offset, filters);
+        
+        console.log('[API /api/search] Response:', { 
+            total: result.total, 
+            productsCount: result.products.length 
+        });
 
         // Add isNew flag (within 30 minutes)
         const markNew = (products) => products.map(p => {
@@ -215,10 +256,41 @@ router.get('/api/search', async function (req, res) {
             products: markNew(result.products),
             total: result.total,
             currentPage: page,
-            totalPages: totalPages
+            totalPages: totalPages,
+            hasMore: page < totalPages
         });
     } catch (err) {
-        console.error(err);
+        console.error('[API /api/search] Error:', err);
+        res.status(500).json({ error: 'Lỗi server', details: err.message });
+    }
+});
+
+// 🔍 AUTOCOMPLETE/SUGGESTIONS API
+router.get('/api/suggestions', async function (req, res) {
+    try {
+        const keyword = req.query.q || '';
+        const limit = parseInt(req.query.limit) || 5;
+        
+        if (keyword.length < 2) {
+            return res.json([]);
+        }
+        
+        const suggestions = await productService.searchSuggestions(keyword, limit);
+        
+        res.json(suggestions);
+    } catch (err) {
+        console.error('[API /api/suggestions] Error:', err);
+        res.status(500).json({ error: 'Lỗi server' });
+    }
+});
+
+// 📊 GET FILTER METADATA API
+router.get('/api/filters-metadata', async function (req, res) {
+    try {
+        const metadata = await productService.getSearchFiltersMetadata();
+        res.json(metadata);
+    } catch (err) {
+        console.error('[API /api/filters-metadata] Error:', err);
         res.status(500).json({ error: 'Lỗi server' });
     }
 });
@@ -256,18 +328,51 @@ function maskName(name) {
 router.get('/detail/:id', async function (req, res) {
     const proId = req.params.id || 0;
 
-    const product = await productService.findDetailById(proId);
+    // ✅ OPTIMIZED: Cache product detail for 30 seconds
+    const product = await cacheWrapper(
+        shortCache,
+        `product:${proId}:detail`,
+        30,
+        () => productService.findDetailById(proId)
+    );
+    
     if (!product) {
         return res.redirect('/');
     }
 
-    const relatedProducts = await productService.findRelated(product.category_id, proId);
-
     // Nếu là guest → không hiển thị Q&A và giới hạn bid history
     const isGuest = !req.session.isAuthenticated;
-    const questions = isGuest ? [] : await productService.findQuestions(proId);
 
-    const history = await productService.findBidHistory(proId);
+    // ✅ OPTIMIZED: Cache related data in parallel with different TTLs
+    const [relatedProducts, questions, history, dbImages, bannedBidders] = await Promise.all([
+        cacheWrapper(
+            mediumCache,
+            `product:${product.category_id}:related:${proId}`,
+            60,
+            () => productService.findRelated(product.category_id, proId)
+        ),
+        isGuest ? Promise.resolve([]) : cacheWrapper(
+            shortCache,
+            `product:${proId}:questions`,
+            60,
+            () => productService.findQuestions(proId)
+        ),
+        cacheWrapper(
+            shortCache,
+            `product:${proId}:bids`,
+            10,  // Shorter TTL for bid history
+            () => productService.findBidHistory(proId)
+        ),
+        cacheWrapper(
+            shortCache,
+            `product:${proId}:images`,
+            60,
+            () => productService.findImages(proId)
+        ),
+        (req.session.authUser && product.seller_id === req.session.authUser.id)
+            ? productService.getBannedBidders(proId)
+            : Promise.resolve([])
+    ]);
 
     const historyView = history.map(item => {
         return {
@@ -280,7 +385,6 @@ router.get('/detail/:id', async function (req, res) {
     product.seller_masked = maskName(product.seller_name);
     product.winner_masked = maskName(product.winner_name);
 
-    const dbImages = await productService.findImages(proId);
     let images = [];
     if (dbImages && dbImages.length > 0) {
         images = dbImages.map(img => ({
@@ -304,7 +408,6 @@ router.get('/detail/:id', async function (req, res) {
 
     // Get banned bidders list if user is the seller
     const isSeller = req.session.authUser && product.seller_id === req.session.authUser.id;
-    const bannedBidders = isSeller ? await productService.getBannedBidders(proId) : [];
 
     res.render('vwProduct/detail', {
         product: product,
@@ -391,6 +494,10 @@ router.post('/bid', async function (req, res) {
 
         await productService.placeBid(productId, bidderId, bidPrice);
 
+        // ✅ OPTIMIZED: Invalidate product caches after bid
+        clearCacheByPattern(`product:${productId}:`);
+        clearCacheByPattern('homepage:'); // Homepage might change if bid affects top products
+        
         // Email: Success to current bidder
         const bidderEmail = req.session.authUser.email;
         const bidderName = req.session.authUser.full_name;
@@ -439,8 +546,10 @@ router.post('/bid', async function (req, res) {
         transporter.sendMail(mailOptionsSuccess, (err) => { if (err) console.error('Mail bid success error:', err); });
 
         // Email: Outbid to old winner
+        console.log(`📧 [BID] Checking outbid: oldWinnerId=${oldWinnerId}, bidderId=${bidderId}`);
         if (oldWinnerId && oldWinnerId !== bidderId) {
             const oldWinner = await userService.findById(oldWinnerId);
+            console.log(`📧 [BID] Gửi email outbid cho: ${oldWinner ? oldWinner.email : 'NULL'} (user ${oldWinnerId})`);
             if (oldWinner) {
                 const seller = await userService.findById(product.seller_id);
                 const mailOptionsOutbid = {
@@ -566,81 +675,45 @@ router.post('/upload', upload.array('imgs', 10), async function (req, res) {
             created_at: new Date()
         };
 
-        console.log('Creating product with entity:', entity);
+        console.log('[Upload] Creating product...');
 
         const ret = await productService.add(entity);
         const productId = ret.id || ret;
         
-        console.log('Product created with ID:', productId);
+        console.log(`[Upload] Product created with ID: ${productId}`);
 
-        const targetDir = path.join(process.cwd(), 'static', 'imgs', 'sp', String(productId));
+        // ✅ PHASE 4: Process images with Sharp.js
+        console.log(`[Upload] Processing ${files.length} images with Sharp...`);
+        const processedImages = await processMultipleImages(files, productId);
         
-        console.log('Target directory:', targetDir);
-
-        // Tạo thư mục với recursive: true
-        if (!fs.existsSync(targetDir)) {
-            fs.mkdirSync(targetDir, { recursive: true });
-            console.log('Created directory:', targetDir);
+        if (processedImages.length === 0) {
+            throw new Error('Failed to process any images');
         }
 
-        // Verify thư mục đã tồn tại
-        if (!fs.existsSync(targetDir)) {
-            throw new Error('Failed to create target directory: ' + targetDir);
-        }
+        // Get selected thumbnail index from form (default to 0)
+        const thumbnailIndex = parseInt(req.body.thumbnail_index) || 0;
+        console.log(`[Upload] Selected thumbnail index: ${thumbnailIndex}`);
 
-        // Move files
-        for (let i = 0; i < files.length; i++) {
-            const oldPath = files[i].path;
-            let newFileName = '';
-
-            if (i === 0) {
-                newFileName = 'main_thumbs.jpg';
-            } else {
-                newFileName = `${i}.jpg`;
-            }
-
-            const newPath = path.join(targetDir, newFileName);
-            
-            console.log(`Moving file ${i}: ${oldPath} -> ${newPath}`);
-
-            // Check if source file exists
-            if (!fs.existsSync(oldPath)) {
-                console.error('Source file does not exist:', oldPath);
-                continue;
-            }
-
-            // Use fs.copyFileSync + fs.unlinkSync thay vì renameSync để tránh lỗi cross-device
-            try {
-                fs.copyFileSync(oldPath, newPath);
-                fs.unlinkSync(oldPath);
-                console.log(`Successfully moved file ${i}`);
-            } catch (err) {
-                console.error(`Error moving file ${i}:`, err);
-                // Fallback: try rename
-                fs.renameSync(oldPath, newPath);
-            }
-        }
-
-        // Lưu thông tin ảnh vào database
-        const imageInserts = [];
-        for (let i = 0; i < files.length; i++) {
-            const imageUrl = `/static/imgs/sp/${productId}/${i === 0 ? 'main_thumbs.jpg' : i + '.jpg'}`;
-            imageInserts.push({
-                product_id: productId,
-                image_url: imageUrl,
-                is_thumbnail: i === 0
-            });
-        }
+        // Lưu thông tin ảnh vào database với thumbnail được chọn
+        const imageInserts = processedImages.map((img, index) => ({
+            product_id: productId,
+            image_url: img.medium,  // Use WebP medium size as default
+            is_thumbnail: (index === thumbnailIndex), // Set thumbnail based on user selection
+            display_order: index,
+            created_at: new Date()
+        }));
         
-        if (imageInserts.length > 0) {
-            await db('product_images').insert(imageInserts);
-            console.log(`Inserted ${imageInserts.length} images into database`);
-        }
+        await db('product_images').insert(imageInserts);
+        console.log(`[Upload] Saved ${imageInserts.length} images to database`);
+
+        // Invalidate caches
+        clearCacheByPattern('homepage:');
+        clearCacheByPattern('category:');
 
         req.session.successMessage = 'Đăng sản phẩm thành công!';
         res.redirect(`/products/detail/${productId}`);
     } catch (err) {
-        console.error('Upload error:', err);
+        console.error('[Upload] Error:', err);
         const categories = await categoryService.findAll();
         return res.render('vwProduct/upload', {
             categories: categories,
@@ -673,6 +746,21 @@ router.post('/edit/:id', isSeller, async function (req, res) {
 
     await productService.appendDescription(proId, newContent);
 
+    // Send email notification to all bidders
+    try {
+        const bidders = await productService.getUniqueBidders(proId);
+        if (bidders && bidders.length > 0) {
+            const emailService = await import('../services/email.service.js');
+            await emailService.sendProductUpdateEmail(product, bidders, 'description');
+            console.log(`[NOTIFICATION] Sent update emails to ${bidders.length} bidders for product #${proId}`);
+        } else {
+            console.log(`[NOTIFICATION] No bidders to notify for product #${proId}`);
+        }
+    } catch (emailError) {
+        console.error(`[NOTIFICATION] Error sending update emails for product #${proId}:`, emailError.message);
+        // Continue even if email fails - don't block user
+    }
+
     res.redirect(`/products/detail/${proId}`);
 });
 export default router;
@@ -691,6 +779,10 @@ router.post('/kick', isAuth, isSeller, async function (req, res) {
         req.session.err_message = 'Người dùng này đã bị cấm trước đó.';
         return res.redirect(`/products/detail/${proId}`);
     }
+
+    // Save old winner ID before ban
+    const oldWinnerId = product.winner_id;
+    const wasBannedUserLeading = oldWinnerId === parseInt(bidderId);
 
     await productService.banBidder(proId, bidderId);
 
@@ -744,8 +836,89 @@ router.post('/kick', isAuth, isSeller, async function (req, res) {
             `
         };
         transporter.sendMail(mailOptions, (err) => {
-            if (err) console.error('Lỗi gửi mail ban:', err);
+            if (err) console.error('❌ Lỗi gửi mail ban:', err);
         });
+    }
+
+    // If banned user was leading, notify new leader
+    if (wasBannedUserLeading) {
+        console.log('🔄 Người bị ban đang dẫn đầu, kiểm tra người dẫn đầu mới...');
+        console.log(`📊 Old winner ID: ${oldWinnerId}, Banned user ID: ${bidderId}`);
+        
+        // Get updated product with new winner
+        const updatedProduct = await productService.findDetailById(proId);
+        console.log(`🎯 Updated product winner_id: ${updatedProduct.winner_id}`);
+        
+        if (updatedProduct.winner_id && updatedProduct.winner_id !== parseInt(bidderId)) {
+            const newLeader = await userService.findById(updatedProduct.winner_id);
+            console.log(`👤 New leader found: ${newLeader ? newLeader.email : 'NULL'}`);
+            
+            if (newLeader) {
+                console.log(`📧 Đang gửi email cho người dẫn đầu mới: ${newLeader.email}`);
+                const mailOptionsNewLeader = {
+                    from: `"HỆ THỐNG ĐẤU GIÁ" <${process.env.EMAIL_USER}>`,
+                    to: newLeader.email,
+                    subject: `🎉 [Dẫn đầu] Bạn đang dẫn đầu đấu giá "${product.name}"`,
+                    html: `
+                        <div style="font-family: Arial, sans-serif; padding: 20px; border: 2px solid #28a745; border-radius: 8px; max-width: 600px;">
+                            <div style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 25px; text-align: center; border-radius: 6px 6px 0 0; margin: -20px -20px 20px -20px;">
+                                <h2 style="margin: 0;">🎉 Bạn đang dẫn đầu!</h2>
+                            </div>
+                            
+                            <p>Chào <strong>${newLeader.full_name}</strong>,</p>
+                            <p>Tin tốt! Bạn hiện đang <strong style="color: #28a745;">dẫn đầu đấu giá</strong> cho sản phẩm:</p>
+                            
+                            <div style="background-color: #d4edda; padding: 15px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #28a745;">
+                                <h3 style="margin: 0 0 10px 0; color: #155724;">${product.name}</h3>
+                                <p style="margin: 5px 0;"><strong>💰 Giá hiện tại của bạn:</strong> 
+                                    <span style="font-size: 1.4em; color: #28a745; font-weight: bold;">
+                                        ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(updatedProduct.current_price)}
+                                    </span>
+                                </p>
+                                <p style="margin: 5px 0; font-size: 0.9em; color: #6c757d;">ID sản phẩm: #${proId}</p>
+                            </div>
+
+                            <div style="background-color: #f8f9fa; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                                <p style="margin: 5px 0;"><strong>👤 Người bán:</strong> ${sellerInfo.full_name}</p>
+                                <p style="margin: 5px 0;"><strong>📧 Email:</strong> <a href="mailto:${sellerInfo.email}" style="color: #0d6efd;">${sellerInfo.email}</a></p>
+                            </div>
+
+                            <div style="background-color: #fff3cd; padding: 12px; border-left: 4px solid #ffc107; margin: 15px 0;">
+                                <p style="margin: 0; color: #856404;">
+                                    <strong>⏰ Lưu ý:</strong> Bạn có thể bị vượt giá bất cứ lúc nào. Chúng tôi sẽ gửi email thông báo nếu điều này xảy ra.
+                                </p>
+                            </div>
+
+                            <p style="text-align: center; margin-top: 25px;">
+                                <a href="http://localhost:3000/products/detail/${proId}" style="display: inline-block; background-color: #0d6efd; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                                    🔍 Xem sản phẩm →
+                                </a>
+                            </p>
+
+                            <hr style="margin: 30px 0; border: 1px solid #ddd;">
+                            <p style="font-size: 12px; color: #6c757d; margin: 0;">
+                                Email này được gửi tự động từ hệ thống đấu giá. Vui lòng không trả lời email này.
+                            </p>
+                        </div>
+                    `
+                };
+                
+                transporter.sendMail(mailOptionsNewLeader, (err, info) => {
+                    if (err) {
+                        console.error('❌ Lỗi gửi mail cho người dẫn đầu mới:', err);
+                    } else {
+                        console.log(`✅ Đã gửi email thông báo dẫn đầu cho ${newLeader.email}`);
+                        console.log(`📬 Message ID: ${info.messageId}`);
+                    }
+                });
+            } else {
+                console.log('⚠️ New leader object is NULL');
+            }
+        } else {
+            console.log(`⚠️ Không có người dẫn đầu mới (winner_id: ${updatedProduct.winner_id})`);
+        }
+    } else {
+        console.log('ℹ️ Người bị ban không phải đang dẫn đầu');
     }
 
     req.session.success_message = `Đã cấm người dùng ${bidder ? bidder.full_name : bidderId} đấu giá sản phẩm này và gửi email thông báo.`;
@@ -760,19 +933,46 @@ router.post('/unban', isAuth, isSeller, async function (req, res) {
         return res.redirect('/');
     }
 
-    await productService.unbanBidder(proId, userId);
+    // Save old winner ID before unban
+    const oldWinnerId = product.winner_id;
+    const userIdInt = parseInt(userId);
+    
+    console.log('🔓 UNBAN PROCESS:');
+    console.log(`  - Product ID: ${proId}`);
+    console.log(`  - Unbanned user ID: ${userIdInt}`);
+    console.log(`  - Old winner ID: ${oldWinnerId}`);
 
-    const user = await userService.findById(userId);
+    // Unban user (this will automatically recalculate winner)
+    await productService.unbanBidder(proId, userIdInt);
+
+    // Get updated product to see if winner changed
+    const updatedProduct = await productService.findDetailById(proId);
+    const newWinnerId = updatedProduct.winner_id;
+    
+    console.log(`  - New winner ID: ${newWinnerId}`);
+    console.log(`  - New current price: ${updatedProduct.current_price}`);
+    console.log(`  - Winner changed: ${oldWinnerId !== newWinnerId}`);
+
+    const user = await userService.findById(userIdInt);
     const sellerInfo = await userService.findById(req.session.authUser.id);
+    
+    // Send unban notification to the unbanned user
     if (user) {
+        const isNowLeading = (newWinnerId === userIdInt);
+        console.log(`  - Is unbanned user now leading: ${isNowLeading}`);
+        
+        const mailSubject = isNowLeading 
+            ? `🎉 [Dẫn đầu] Bạn đang dẫn đầu đấu giá "${product.name}"`
+            : `✅ [Thông báo] Bạn đã được phép đấu giá lại sản phẩm #${proId}`;
+        
         const mailOptions = {
             from: `"HỆ THỐNG ĐẤU GIÁ" <${process.env.EMAIL_USER}>`,
             to: user.email,
-            subject: `✅ [Thông báo] Bạn đã được phép đấu giá lại sản phẩm #${proId}`,
+            subject: mailSubject,
             html: `
                 <div style="font-family: Arial, sans-serif; padding: 20px; border: 2px solid #28a745; border-radius: 8px; max-width: 600px;">
                     <div style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 25px; text-align: center; border-radius: 6px 6px 0 0; margin: -20px -20px 20px -20px;">
-                        <h2 style="margin: 0;">✅ Thông báo gỡ bỏ hạn chế</h2>
+                        <h2 style="margin: 0;">${isNowLeading ? '🎉 Bạn đang dẫn đầu!' : '✅ Thông báo gỡ bỏ hạn chế'}</h2>
                     </div>
                     
                     <p>Chào <strong>${user.full_name}</strong>,</p>
@@ -780,7 +980,7 @@ router.post('/unban', isAuth, isSeller, async function (req, res) {
                     
                     <div style="background-color: #d4edda; padding: 15px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #28a745;">
                         <h3 style="margin: 0 0 10px 0; color: #155724;">${product.name}</h3>
-                        <p style="margin: 5px 0;"><strong>Giá hiện tại:</strong> ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.current_price)}</p>
+                        <p style="margin: 5px 0;"><strong>Giá hiện tại:</strong> ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(updatedProduct.current_price)}</p>
                         <p style="margin: 5px 0; font-size: 0.9em; color: #6c757d;">ID sản phẩm: #${proId}</p>
                     </div>
 
@@ -789,9 +989,15 @@ router.post('/unban', isAuth, isSeller, async function (req, res) {
                         <p style="margin: 5px 0;"><strong>📧 Email:</strong> <a href="mailto:${sellerInfo.email}" style="color: #0d6efd;">${sellerInfo.email}</a></p>
                     </div>
 
-                    <p style="background-color: #d1ecf1; padding: 12px; border-left: 4px solid #0dcaf0; margin: 15px 0; color: #055160;">
-                        🎉 <strong>Tin tốt lành!</strong> Bạn có thể tham gia đấu giá sản phẩm này trở lại!
-                    </p>
+                    ${isNowLeading ? `
+                        <p style="background-color: #d4edda; padding: 12px; border-left: 4px solid #28a745; margin: 15px 0; color: #155724;">
+                            🏆 <strong>Tin tuyệt vời!</strong> Với lượt đấu giá trước đó của bạn, bạn hiện đang DẪN ĐẦU cuộc đấu giá này!
+                        </p>
+                    ` : `
+                        <p style="background-color: #d1ecf1; padding: 12px; border-left: 4px solid #0dcaf0; margin: 15px 0; color: #055160;">
+                            🎉 <strong>Tin tốt lành!</strong> Bạn có thể tham gia đấu giá sản phẩm này trở lại!
+                        </p>
+                    `}
 
                     <p style="text-align: center; margin-top: 25px;">
                         <a href="http://localhost:3000/products/detail/${proId}" style="display: inline-block; background-color: #28a745; color: white; padding: 14px 35px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
@@ -806,9 +1012,81 @@ router.post('/unban', isAuth, isSeller, async function (req, res) {
                 </div>
             `
         };
+        
         transporter.sendMail(mailOptions, (err) => {
-            if (err) console.error('Lỗi gửi mail unban:', err);
+            if (err) {
+                console.error('❌ Lỗi gửi mail unban:', err);
+            } else {
+                console.log(`✅ Đã gửi email ${isNowLeading ? 'dẫn đầu' : 'unban'} cho ${user.email}`);
+            }
         });
+    }
+
+    // If winner changed, notify the old winner they've been outbid
+    const winnerChanged = (oldWinnerId && newWinnerId && oldWinnerId !== newWinnerId);
+    console.log(`  - Should notify old winner: ${winnerChanged}`);
+    
+    if (winnerChanged) {
+        const oldWinner = await userService.findById(oldWinnerId);
+        console.log(`  - Old winner: ${oldWinner ? oldWinner.email : 'NULL'}`);
+        
+        if (oldWinner) {
+            console.log(`📧 Gửi email thông báo bị vượt mặt cho: ${oldWinner.email}`);
+            const mailOptionsOutbid = {
+                from: `"HỆ THỐNG ĐẤU GIÁ" <${process.env.EMAIL_USER}>`,
+                to: oldWinner.email,
+                subject: `⚠️ [Thông báo] Bạn đã bị vượt giá - "${product.name}"`,
+                html: `
+                    <div style="font-family: Arial, sans-serif; padding: 20px; border: 2px solid #ffc107; border-radius: 8px; max-width: 600px;">
+                        <div style="background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%); color: white; padding: 25px; text-align: center; border-radius: 6px 6px 0 0; margin: -20px -20px 20px -20px;">
+                            <h2 style="margin: 0;">⚠️ Bạn đã bị vượt giá!</h2>
+                        </div>
+                        
+                        <p>Chào <strong>${oldWinner.full_name}</strong>,</p>
+                        <p>Rất tiếc! Bạn <strong style="color: #ff9800;">không còn dẫn đầu</strong> cuộc đấu giá cho sản phẩm:</p>
+                        
+                        <div style="background-color: #fff3cd; padding: 15px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #ffc107;">
+                            <h3 style="margin: 0 0 10px 0; color: #856404;">${product.name}</h3>
+                            <p style="margin: 5px 0;"><strong>💰 Giá hiện tại:</strong> 
+                                <span style="font-size: 1.4em; color: #d39e00; font-weight: bold;">
+                                    ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(updatedProduct.current_price)}
+                                </span>
+                            </p>
+                            <p style="margin: 5px 0; font-size: 0.9em; color: #6c757d;">ID sản phẩm: #${proId}</p>
+                        </div>
+
+                        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                            <p style="margin: 5px 0;"><strong>👤 Người bán:</strong> ${sellerInfo.full_name}</p>
+                            <p style="margin: 5px 0;"><strong>📧 Email:</strong> <a href="mailto:${sellerInfo.email}" style="color: #0d6efd;">${sellerInfo.email}</a></p>
+                        </div>
+
+                        <p style="background-color: #e7f3ff; padding: 12px; border-left: 4px solid #0d6efd; margin: 15px 0; color: #004085;">
+                            💡 <strong>Đừng bỏ lỡ!</strong> Bạn vẫn còn cơ hội đấu giá lại để giành chiến thắng!
+                        </p>
+
+                        <p style="text-align: center; margin-top: 25px;">
+                            <a href="http://localhost:3000/products/detail/${proId}" style="display: inline-block; background-color: #0d6efd; color: white; padding: 14px 35px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
+                                🔥 Đấu giá lại ngay! →
+                            </a>
+                        </p>
+
+                        <hr style="margin: 30px 0; border: 1px solid #ddd;">
+                        <p style="font-size: 12px; color: #6c757d; margin: 0;">
+                            Email này được gửi tự động từ hệ thống đấu giá. Vui lòng không trả lời email này.
+                        </p>
+                    </div>
+                `
+            };
+            transporter.sendMail(mailOptionsOutbid, (err, info) => {
+                if (err) {
+                    console.error('❌ Lỗi gửi mail outbid:', err);
+                } else {
+                    console.log(`✅ Đã gửi email thông báo bị vượt mặt cho ${oldWinner.email}`);
+                }
+            });
+        }
+    } else {
+        console.log(`ℹ️ Winner không đổi hoặc không có old winner, không gửi email outbid`);
     }
 
     req.session.success_message = `Đã gỡ bỏ lệnh cấm cho người dùng ${user ? user.full_name : userId} và gửi email thông báo.`;
@@ -843,8 +1121,14 @@ router.post('/ban-user', isAuth, isSeller, async function (req, res) {
         return res.redirect(`/products/detail/${proId}`);
     }
 
+    // Save old winner ID before ban
+    const oldWinnerId = product.winner_id;
+    const wasBannedUserLeading = oldWinnerId === user.id;
+
+    // Ban the bidder (this will automatically recalculate winner)
     await productService.banBidder(proId, user.id);
 
+    // Send ban notification email to banned user
     const sellerInfo = await userService.findById(req.session.authUser.id);
     const mailOptions = {
         from: `"HỆ THỐNG ĐẤU GIÁ" <${process.env.EMAIL_USER}>`,
@@ -895,6 +1179,87 @@ router.post('/ban-user', isAuth, isSeller, async function (req, res) {
     transporter.sendMail(mailOptions, (err) => {
         if (err) console.error('Lỗi gửi mail ban:', err);
     });
+
+    // If banned user was leading, notify new leader
+    if (wasBannedUserLeading) {
+        console.log('🔄 Người bị ban đang dẫn đầu, kiểm tra người dẫn đầu mới...');
+        console.log(`📊 Old winner ID: ${oldWinnerId}, Banned user ID: ${user.id}`);
+        
+        // Get updated product with new winner
+        const updatedProduct = await productService.findDetailById(proId);
+        console.log(`🎯 Updated product winner_id: ${updatedProduct.winner_id}`);
+        
+        if (updatedProduct.winner_id && updatedProduct.winner_id !== user.id) {
+            const newLeader = await userService.findById(updatedProduct.winner_id);
+            console.log(`👤 New leader found: ${newLeader ? newLeader.email : 'NULL'}`);
+            
+            if (newLeader) {
+                console.log(`📧 Đang gửi email cho người dẫn đầu mới: ${newLeader.email}`);
+                const mailOptionsNewLeader = {
+                    from: `"HỆ THỐNG ĐẤU GIÁ" <${process.env.EMAIL_USER}>`,
+                    to: newLeader.email,
+                    subject: `🎉 [Dẫn đầu] Bạn đang dẫn đầu đấu giá "${product.name}"`,
+                    html: `
+                        <div style="font-family: Arial, sans-serif; padding: 20px; border: 2px solid #28a745; border-radius: 8px; max-width: 600px;">
+                            <div style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 25px; text-align: center; border-radius: 6px 6px 0 0; margin: -20px -20px 20px -20px;">
+                                <h2 style="margin: 0;">🎉 Bạn đang dẫn đầu!</h2>
+                            </div>
+                            
+                            <p>Chào <strong>${newLeader.full_name}</strong>,</p>
+                            <p>Tin tốt! Bạn hiện đang <strong style="color: #28a745;">dẫn đầu đấu giá</strong> cho sản phẩm:</p>
+                            
+                            <div style="background-color: #d4edda; padding: 15px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #28a745;">
+                                <h3 style="margin: 0 0 10px 0; color: #155724;">${product.name}</h3>
+                                <p style="margin: 5px 0;"><strong>💰 Giá hiện tại của bạn:</strong> 
+                                    <span style="font-size: 1.4em; color: #28a745; font-weight: bold;">
+                                        ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(updatedProduct.current_price)}
+                                    </span>
+                                </p>
+                                <p style="margin: 5px 0; font-size: 0.9em; color: #6c757d;">ID sản phẩm: #${proId}</p>
+                            </div>
+
+                            <div style="background-color: #f8f9fa; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                                <p style="margin: 5px 0;"><strong>👤 Người bán:</strong> ${sellerInfo.full_name}</p>
+                                <p style="margin: 5px 0;"><strong>📧 Email:</strong> <a href="mailto:${sellerInfo.email}" style="color: #0d6efd;">${sellerInfo.email}</a></p>
+                            </div>
+
+                            <div style="background-color: #fff3cd; padding: 12px; border-left: 4px solid #ffc107; margin: 15px 0;">
+                                <p style="margin: 0; color: #856404;">
+                                    <strong>⏰ Lưu ý:</strong> Bạn có thể bị vượt giá bất cứ lúc nào. Chúng tôi sẽ gửi email thông báo nếu điều này xảy ra.
+                                </p>
+                            </div>
+
+                            <p style="text-align: center; margin-top: 25px;">
+                                <a href="http://localhost:3000/products/detail/${proId}" style="display: inline-block; background-color: #0d6efd; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                                    🔍 Xem sản phẩm →
+                                </a>
+                            </p>
+
+                            <hr style="margin: 30px 0; border: 1px solid #ddd;">
+                            <p style="font-size: 12px; color: #6c757d; margin: 0;">
+                                Email này được gửi tự động từ hệ thống đấu giá. Vui lòng không trả lời email này.
+                            </p>
+                        </div>
+                    `
+                };
+                
+                transporter.sendMail(mailOptionsNewLeader, (err, info) => {
+                    if (err) {
+                        console.error('❌ Lỗi gửi mail cho người dẫn đầu mới:', err);
+                    } else {
+                        console.log(`✅ Đã gửi email thông báo dẫn đầu cho ${newLeader.email}`);
+                        console.log(`📬 Message ID: ${info.messageId}`);
+                    }
+                });
+            } else {
+                console.log('⚠️ New leader object is NULL');
+            }
+        } else {
+            console.log(`⚠️ Không có người dẫn đầu mới (winner_id: ${updatedProduct.winner_id})`);
+        }
+    } else {
+        console.log('ℹ️ Người bị ban không phải đang dẫn đầu');
+    }
 
     req.session.success_message = `Đã cấm người dùng ${user.full_name} (${userEmail}) đấu giá sản phẩm này và gửi email thông báo.`;
     res.redirect(`/products/detail/${proId}`);

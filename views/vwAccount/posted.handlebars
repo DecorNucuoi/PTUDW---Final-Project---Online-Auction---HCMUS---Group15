@@ -52,7 +52,7 @@
                     <td>
                          <div class="d-flex align-items-center">
                              <a href="/products/detail/{{id}}">
-                                <img src="{{#if imagePath}}{{imagePath}}{{else}}/static/imgs/sp/{{id}}/main_thumbs.jpg{{/if}}" class="rounded me-2 border" style="width: 50px; height: 50px; object-fit: cover;">
+                                <img src="{{imageFallback imagePath id}}" class="rounded me-2 border" style="width: 50px; height: 50px; object-fit: cover;" loading="lazy" width="50" height="50">
                              </a>
                              <div class="text-truncate" style="max-width: 200px;">
                                  <a href="/products/detail/{{id}}" class="text-decoration-none fw-bold text-dark">{{name}}</a>

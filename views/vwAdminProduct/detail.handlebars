@@ -142,7 +142,7 @@
                         <div class="carousel-inner">
                             {{#each images}}
                             <div class="carousel-item {{#if this.is_thumbnail}}active{{/if}}">
-                                <img src="{{this.image_url}}" class="d-block w-100" alt="Product Image">
+                                <img src="{{this.image_url}}" class="d-block w-100" alt="Product Image" loading="lazy">
                                 {{#if this.is_thumbnail}}
                                 <div class="badge bg-primary position-absolute top-0 start-0 m-2">Thumbnail</div>
                                 {{/if}}
